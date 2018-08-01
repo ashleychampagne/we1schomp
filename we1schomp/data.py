@@ -9,12 +9,14 @@ import time
 from gettext import gettext as _
 from logging import getLogger
 
-from scrape import clean
+from we1schomp import clean
 
 
 def find_json_files_in_path(path):
-    """ Look for all files ending with a json extension. This is a generator
-    function and must be funnelled into a list or called as part of a loop.
+    """ Look for all files ending with a json extension.
+    
+    This is a generator function and must be funnelled into a list or called as
+    part of a loop.
 
     Args:
         path (str): A folder containing JSON files.
