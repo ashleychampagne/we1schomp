@@ -1,0 +1,34 @@
+# The site's full, human-readable name.
+name: WhatEvery1Says
+# A short, machine-readable version of the name with no whitespaces or punctuation.
+slug: we1s
+# The site's domain name. Do not include www., http://, or https://.
+site: we1s.ucsb.edu
+# OPTIONAL: Query terms to use for this site. Overrides global setting.
+queries:
+ - humanities
+ - liberal arts
+# OPTIONAL: Enable WordPress scraping for this site.
+wpEnable: true
+# OPTIONAL: Look for WordPress Pages when scraping this site.
+wpGetPages: true
+# OPTIONAL: Look for WordPress Posts when scraping this site.
+wpGetPosts: true
+# OPTIONAL: Search Google for this site.
+googleSearchEnable: true
+# OPTIONAL: Allow direct scraping for this site.
+googleScrapeEnable: true
+# OPTIONAL: Tag to look for when assembling content for this site.
+googleContentTag: p
+# OPTIONAL: Minimum text length in tag to scrape.
+googleContentLengthMin: 75
+# OPTIONAL: URLs containing these phrases will be skipped when searching in Google.
+googleURLStopwords:
+ - contributor/
+ - .pdf
+# OPTIONAL: Skip this site completely.
+skip: true
+---  # Each new site should begin with ---
+name: The Anarcho-Syndicalist Review
+slug: anarcho-syndicalist-review
+site: syndicalist.us
