@@ -81,8 +81,7 @@ LOG_FORMAT: "%(asctime)s   %(name)s   %(levelname)s: %(message)s"
 CONSOLE_FORMAT: "%(levelname)s: %(message)s"
 
 # Selenium WebDriver settings.
-# URL and port to connect to.
-WEBDRIVER_URL: "..."
+#WEBDRIVER_URL -- set with environment variable WE1SCHOMP_WEBDRIVER_URL
 # Min & max sleep time, in seconds. This is also used for urrllib requests.
 WEBDRIVER_SLEEP_MIN: 0.5
 WEBDRIVER_SLEEP_MAX: 5

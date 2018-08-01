@@ -8,9 +8,9 @@ from gettext import gettext as _
 from logging import getLogger
 from uuid import uuid4
 
-from we1schomp.scrape import browser
-from we1schomp.scrape import clean
-from we1schomp.scrape import data
+from we1schomp import browser
+from we1schomp import clean
+from we1schomp import data
 
 
 def check_for_api(site, config):
@@ -21,6 +21,7 @@ def check_for_api(site, config):
     """
 
     log = getLogger(__name__)
+    print()
 
     # Assume we've already checked for config['ENABLE_WORDPRESS'].
     if not site['wpEnable']:
@@ -61,6 +62,7 @@ def yield_articles(site, config):
     """
 
     log = getLogger(__name__)
+    print()
 
     # Perform the API query.
     log.info(_('Starting WordPress scrape for site: %s'), site['name'])
