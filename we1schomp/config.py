@@ -79,7 +79,7 @@ default_config = dict(
     CONSOLE_FORMAT='%(levelname)s: %(message)s',
 
     # Selenium WebDriver settings.
-    WEBDRIVER_URL=os.getenv('WE1S_WEBDRIVER_URL')
+    WEBDRIVER_URL=os.getenv('WE1S_WEBDRIVER_URL'),
     WEBDRIVER_SLEEP_MIN=0.5,
     WEBDRIVER_SLEEP_MAX=5.0
 )
