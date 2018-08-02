@@ -13,12 +13,16 @@ from we1schomp import clean
 from we1schomp import data
 
 
-def url_has_stopword(url, site):
+def url_has_stopword(url, site, config):
     """ Return "True" if the url has a site's stopword.
     """
 
-    for stop in site['googleURLStopwords']:
+    log = getLogger(__name__)
+
+    stopwords = site.get('googleURLStopwords', config['GOOGLE_URL_STOPWORDS'])
+    for stop in stopwords:
         if stop in url:
+            log.warning(_('Skipping (has "%s"): %s'), stop, url)
             return True
     
     return False
@@ -32,15 +36,15 @@ def yield_search_results(site, config, webdriver):
     print()
 
     # Assume we've already checked for config['GOOGLE_SEARCH_ENABLE'].
-    if not site['googleSearchEnable']:
+    if not site.get('googleSearchEnable', config['GOOGLE_SEARCH_ENABLE']):
         log.warning(_('Google Search disabled for site: %s'), site['name'])
         return []
     
-    for query in site['queries']:
-        log.info(_('Searching Google for "%s" at: %s'), query, site['url'])
+    for query in site.get('queries', config['QUERIES']):
+        log.info(_('Searching Google for "%s" at: %s'), query, site['site'])
 
         # Start the query.
-        google_url = config['GOOGLE_QUERY_URL'].format(site=site['url'], query=query)
+        google_url = config['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
 
         # Loop over the page looking for results, then loop over the results.
         while True:
@@ -58,8 +62,7 @@ def yield_search_results(site, config, webdriver):
                 link = div.find('a')
                 url = str(link.get('href')).lower()
 
-                if url_has_stopword(url, site):
-                    log.warning(_('Skipping (stopword): %s'), url)
+                if url_has_stopword(url, site, config):
                     continue
 
                 # Sometimes the link's URL gets mushed in with the text. It also
@@ -81,10 +84,9 @@ def yield_search_results(site, config, webdriver):
                 slug = config['DB_NAME_FORMAT'].format(
                     site=site['slug'],
                     query=clean.slugify(query),
-                    slug=clean.slugify(title)
-                )   
+                    slug=clean.slugify(title))   
 
-                article = dict(
+                yield dict(
                     doc_id=str(uuid4()),
                     attachment_id='',
                     namespace=config['NAMESPACE'],
@@ -95,15 +97,12 @@ def yield_search_results(site, config, webdriver):
                     title=title,
                     url=link,
                     content='',  # We don't have content yet--we'll get that next.
-                    search_term=query
-                )
-
-                yield article
+                    search_term=query)
         
             try:
                 next_link = webdriver.find_element_by_id('pnnext')
             except selenium.common.exceptions.NoSuchAttributeException:
-                log.info(_('End of results for "%s" at: %s'), query, site['url'])
+                log.info(_('End of results for "%s" at: %s'), query, site['site'])
                 break
         
             log.info(_('Going to next page.'))
@@ -134,8 +133,7 @@ def get_content(site, config, webdriver):
     for article in articles:
 
         # Don't waste time on this site if we've updated the stopwords.
-        if url_has_stopword(article['url'], site):
-            log.warning(_('Skipping (stopword): %s'), article['url'])
+        if url_has_stopword(article['url'], site, config):
             continue
 
         browser.sleep(config)
@@ -162,10 +160,12 @@ def get_content(site, config, webdriver):
         # imprecise, but it seems to work for the most part. If we're getting
         # particularly bad content for a site, we can tweak the config and
         # try again or switch to a more advanced web-scraping tool.
+        tag = site.get('googleContentTag', config['GOOGLE_CONTENT_TAG'])
+        length = site.get('googleContentLengthMin', config['GOOGLE_CONTENT_LENGTH_MIN'])
         content = ''
-        for tag in soup.find_all(site['googleContentTag']):
-            if len(tag.text) > site['googleContentLengthMin']:
-                content += f' {tag.text}'
+        for div in soup.find_all(tag):
+            if len(div.text) > length:
+                content += f' {div.text}'
         content = clean.from_html(content, config)
         
         article.update({'content': content})

@@ -24,12 +24,12 @@ def check_for_api(site, config):
     print()
 
     # Assume we've already checked for config['ENABLE_WORDPRESS'].
-    if not site['wpEnable']:
+    if not site.get('wpEnable', config['WORDPRESS_ENABLE']):
         log.warning(_('WordPress disabled for site: %s'), site['name'])
         return False
 
     log.info(_('Testing WordPress API for site: %s'), site['name'])
-    wp_url = f"http://{site['url'].strip('/')}{config['WORDPRESS_API_URL']}"
+    wp_url = f"http://{site['site'].strip('/')}{config['WORDPRESS_API_URL']}"
     browser.sleep(config)
     response = browser.get_json_from_url(wp_url)
 
@@ -67,12 +67,12 @@ def yield_articles(site, config):
     # Perform the API query.
     log.info(_('Starting WordPress scrape for site: %s'), site['name'])
     results = []
-    wp_url = f"http://{site['url'].strip('/')}{config['WORDPRESS_API_URL']}"
+    wp_url = f"http://{site['site'].strip('/')}{config['WORDPRESS_API_URL']}"
 
-    for query in site['queries']:
+    for query in site.get('queries', config['QUERIES']):
         query_results = []
 
-        if not (config['WORDPRESS_GET_PAGES'] and site['wpPagesEnable']):
+        if not (config['WORDPRESS_GET_PAGES'] and site.get('wpPagesEnable', True)):
             log.warning(_('Skipping pages (disabled).'))
         else:
             wp_query = config['WORDPRESS_PAGES_QUERY_URL'].format(
@@ -81,7 +81,7 @@ def yield_articles(site, config):
             browser.sleep()
             query_results += browser.get_json_from_url(wp_query)
 
-        if not (config['WORDPRESS_GET_POSTS'] and site['wpPostsEnable']):
+        if not (config['WORDPRESS_GET_POSTS'] and site.get('wpPostsEnable', True)):
             log.warning(_('Skipping posts (disabled).'))
         else:
             wp_query = config['WORDPRESS_POSTS_QUERY_URL'].format(
