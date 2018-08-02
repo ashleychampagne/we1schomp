@@ -139,7 +139,7 @@ def load_from_yaml(filename_settings, filename_sites):
         log.error(_('Sites file not found: %s'), filename_sites)
         log.warning(_('Using default sites.'))
 
-    # Make settings dir if necessary.
+    # Make output dir if necessary.
     if not os.path.exists(settings['FILE_OUTPUT_PATH']):
         log.info(_('Creating output directory: %s'), settings['FILE_OUTPUT_PATH'])
         os.makedirs(settings['FILE_OUTPUT_PATH'])

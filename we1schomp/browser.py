@@ -10,7 +10,20 @@ from gettext import gettext as _
 from logging import getLogger
 from urllib.request import urlopen
 
+from selenium import webdriver
 from bs4 import BeautifulSoup
+
+
+def get_webdriver(config):
+    """ Get a handle to the Selenium webdriver or make a new one.
+    """
+
+    grid_url = config['WEBDRIVER_URL']
+    capabilities = webdriver.DesiredCapabilities.CHROME
+    __webdriver = webdriver.Remote(
+        desired_capabilities=capabilities, command_executor=grid_url)
+
+    return __webdriver
 
 
 def sleep(config=None, short=False, seconds=0.0):
@@ -75,10 +88,11 @@ def get_soup_from_url(url, config, webdriver=None, force_selenium=False):
 
     log = getLogger(__name__)
 
-    if not webdriver and force_selenium:
-        raise AssertionError(_('Cannot force webdriver when no webdriver passed!'))
+    # Just in case...
+    url = url.replace('http://', '').replace('https://','')
+    url = f'http://{url}'
 
-    if not webdriver or force_selenium:
+    if not force_selenium:
         try:
             with urlopen(url) as result:
                 log.info(_('URLLib: %s'), url)
@@ -89,7 +103,9 @@ def get_soup_from_url(url, config, webdriver=None, force_selenium=False):
 
     assert webdriver is not None
     log.info(_('Selenium: %s'), url)
+    webdriver.get(url)
     soup = BeautifulSoup(webdriver.page_source, 'html5lib')
+    log.debug(_('Soup: %s'), soup)
     return soup
 
 

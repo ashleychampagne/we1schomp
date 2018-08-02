@@ -66,6 +66,7 @@ def yield_search_results(site, config, webdriver):
                 # The link will be the first anchor in the rc div.
                 link = div.find('a')
                 url = str(link.get('href')).lower()
+                log.debug(_('Found Google result: %s'), url)
 
                 if url_has_stopword(url, site, config):
                     continue
@@ -100,13 +101,13 @@ def yield_search_results(site, config, webdriver):
                     pub=site['name'],
                     pub_short=site['slug'],
                     title=title,
-                    url=link,
+                    url=url,
                     content='',  # We don't have content yet--we'll get that next.
                     search_term=query)
         
             try:
                 next_link = webdriver.find_element_by_id('pnnext')
-            except selenium.common.exceptions.NoSuchAttributeException:
+            except selenium.common.exceptions.NoSuchElementException:
                 log.info(_('End of results for "%s" at: %s'), query, site['site'])
                 break
         
