@@ -23,9 +23,14 @@ def check_for_api(site, config):
     log = getLogger(__name__)
     print()
 
-    # Assume we've already checked for config['ENABLE_WORDPRESS'].
+    if not config['WORDPRESS_ENABLE']:
+        log.warning(_('WordPress has been disabled.'))
+        return []
+    if site.get('skip', False):
+        log.warning(_('Skipping: %s'), site['name'])
+        return []
     if not site.get('wpEnable', config['WORDPRESS_ENABLE']):
-        log.warning(_('WordPress disabled for site: %s'), site['name'])
+        log.warning(_('WordPress disabled: %s'), site['name'])
         return False
 
     log.info(_('Testing WordPress API for site: %s'), site['name'])
@@ -124,4 +129,3 @@ def yield_articles(site, config):
         yield article
 
     log.info(_('Scrape complete: %s'), site['name'])
-    site.update({'skip': True})

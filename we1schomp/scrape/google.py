@@ -35,9 +35,14 @@ def yield_search_results(site, config, webdriver):
     log = getLogger(__name__)
     print()
 
-    # Assume we've already checked for config['GOOGLE_SEARCH_ENABLE'].
+    if not config['GOOGLE_SEARCH_ENABLE']:
+        log.warning(_('Google Search has been disabled.'))
+        return []
+    if site.get('skip', False):
+        log.warning(_('Skipping: %s'), site['name'])
+        return []
     if not site.get('googleSearchEnable', config['GOOGLE_SEARCH_ENABLE']):
-        log.warning(_('Google Search disabled for site: %s'), site['name'])
+        log.warning(_('Google Search disabled: %s'), site['name'])
         return []
     
     for query in site.get('queries', config['QUERIES']):
