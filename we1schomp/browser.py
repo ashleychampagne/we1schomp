@@ -24,7 +24,7 @@ def sleep(config=None, short=False, seconds=0.0):
 
     log = getLogger(__name__)
 
-    if seconds != 0.0:
+    if seconds == 0.0:
 
         if config is not None:
             seconds_min = config['WEBDRIVER_SLEEP_MIN']

@@ -49,7 +49,7 @@ def yield_search_results(site, config, webdriver):
         # Loop over the page looking for results, then loop over the results.
         while True:
 
-            browser.sleep()
+            browser.sleep(config)
             soup = browser.get_soup_from_url(google_url, config, webdriver, force_selenium=True)
 
             # Check for a CAPTCHA. If we find one, hand over execution until
@@ -89,9 +89,9 @@ def yield_search_results(site, config, webdriver):
                 yield dict(
                     doc_id=str(uuid4()),
                     attachment_id='',
-                    namespace=config['NAMESPACE'],
+                    namespace=config['DB_NAMESPACE'],
                     name=slug,
-                    metapath=config['METAPATH'].format(site=site['slug']),
+                    DB_METAPATH=config['DB_METAPATH'].format(site=site['slug']),
                     pub=site['name'],
                     pub_short=site['slug'],
                     title=title,

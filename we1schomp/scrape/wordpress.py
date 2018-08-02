@@ -78,7 +78,7 @@ def yield_articles(site, config):
             wp_query = config['WORDPRESS_PAGES_QUERY_URL'].format(
                 api_url=wp_url, query=query.replace(' ', '+'))
             log.info(_('Querying pages: %s'), wp_query)
-            browser.sleep()
+            browser.sleep(config)
             query_results += browser.get_json_from_url(wp_query)
 
         if not (config['WORDPRESS_GET_POSTS'] and site.get('wpPostsEnable', True)):
@@ -87,7 +87,7 @@ def yield_articles(site, config):
             wp_query = config['WORDPRESS_POSTS_QUERY_URL'].format(
                 api_url=wp_url, query=query.replace(' ', '+'))
             log.info(_('Querying posts: %s'), wp_query)
-            browser.sleep()
+            browser.sleep(config)
             query_results += browser.get_json_from_url(wp_query)
         
         # Collate results with query terms.
@@ -110,9 +110,9 @@ def yield_articles(site, config):
         article = dict(
             doc_id=str(uuid4()),
             attachment_id='',
-            namespace=config['NAMESPACE'],
+            namespace=config['DB_NAMESPACE'],
             name=slug,
-            metapath=config['METAPATH'].format(site=site['slug']),
+            DB_METAPATH=config['DB_METAPATH'].format(site=site['slug']),
             pub=site['name'],
             pub_short=site['slug'],
             title=clean.from_html(query_result['title']['rendered'], config),
