@@ -16,7 +16,7 @@ CONFIG = dict()
 SITES = dict()
 
 
-def load_config_from_yaml(filename=''):
+def load_config_from_yaml():
     """ Load the configuration file from YAML.
 
     Args:
@@ -38,7 +38,7 @@ def load_config_from_yaml(filename=''):
     return CONFIG
 
 
-def load_sites_from_yaml(filename=''):
+def load_sites_from_yaml():
     """ Load the sites file from YAML.
 
     Args:
@@ -56,7 +56,7 @@ def load_sites_from_yaml(filename=''):
 
     log.info(_('Loading sites file: %s'), filename)
     with open(filename) as yaml_file:
-        SITES = yaml.load(yaml_file)  # pylint: disable=W0621,C0103
+        SITES = yaml.load_all(yaml_file)  # pylint: disable=W0621,C0103
     return SITES
 
 
@@ -98,5 +98,5 @@ def save_sites_to_yaml():
 
     log.info(_('Saving sites: %s'), filename)
     with open(filename, 'w') as yaml_file:
-        yaml.dump(SITES, yaml_file)
+        yaml.dump_all(SITES, yaml_file)
     return True
