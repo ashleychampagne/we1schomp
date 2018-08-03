@@ -5,22 +5,22 @@
 import json
 import random
 import time
-import urllib
 from gettext import gettext as _
 from logging import getLogger
+from urllib import error
 from urllib.request import urlopen
 
-from selenium import webdriver
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
-from we1schomp.config import config
+from we1schomp.config import CONFIG
 
 
 def get_webdriver():
     """ Get a handle to the Selenium webdriver or make a new one.
     """
 
-    grid_url = config['WEBDRIVER_URL']
+    grid_url = CONFIG['WEBDRIVER_URL']
     capabilities = webdriver.DesiredCapabilities.CHROME
     __webdriver = webdriver.Remote(
         desired_capabilities=capabilities, command_executor=grid_url)
@@ -39,8 +39,8 @@ def sleep(short=False, seconds=0.0):
     log = getLogger(__name__)
 
     if seconds == 0.0:
-        seconds_min = config['WEBDRIVER_SLEEP_MIN']
-        seconds_max = config['WEBDRIVER_SLEEP_MAX']
+        seconds_min = CONFIG['WEBDRIVER_SLEEP_MIN']
+        seconds_max = CONFIG['WEBDRIVER_SLEEP_MAX']
 
         if not short:
             seconds = random.uniform(seconds_min, seconds_max)
@@ -61,35 +61,26 @@ def get_json_from_url(url):
     try:
         with urlopen(url) as response:
             return json.loads(response.read())
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        log.debug(_('URLLib Error: %s'), e)
+    except (error.HTTPError, error.URLError) as ex:
+        log.debug(_('URLLib Error: %s'), ex)
         log.debug(_('No data collected.'))
-    except json.decoder.JSONDecodeError as e:
-        log.warning(_('JSON Error: %s'), e)
+    except json.decoder.JSONDecodeError as ex:
+        log.warning(_('JSON Error: %s'), ex)
         log.warning(_('No data collected.'))
 
     return None
 
 
 def get_soup_from_url(url):
-    """ Get BeautifulSoup data from a URL.
+    """ Get BeautifulSoup data from a URL using URLLib.urlopen().
 
-    Args:
-        url (str): URL to get.
-        webdriver (WebDriver): Selenium webdriver.
-        force_selenium (boolean): Use Selenium first. Otherwise prefer URLLib.
-    
-    Raises:
-        AssertionError: If you want to use a webdriver, you must pass one!
-
-    Returns:
-        BeautifulSoup: D.O.M. data.
+    Thread-safe, but blocked by some sites.
     """
 
     log = getLogger(__name__)
 
     # Just in case...
-    url = url.replace('http://', '').replace('https://','')
+    url = url.replace('http://', '').replace('https://', '')
     url = f'http://{url}'
 
     try:
@@ -97,21 +88,25 @@ def get_soup_from_url(url):
             log.info(_('URLLib: %s'), url)
             soup = BeautifulSoup(result.read(), 'html5lib')
             return soup
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        log.debug(_('URLLib Error: %s'), e)
+    except (error.HTTPError, error.URLError) as ex:
+        log.debug(_('URLLib Error: %s'), ex)
         return None
 
 
-def get_soup_from_selenium(url, webdriver):
+def get_soup_from_selenium(url, driver):
+    """Get BeautifulSoup data from a URL using webdriver.get().
+
+    Not thread-safe, but more versatile than get_soup_from_url().
+    Also required if there is a potential for CAPTCHAs.
+    """
 
     log = getLogger(__name__)
 
     log.info(_('Selenium: %s'), url)
-    webdriver.get(url)
-    soup = BeautifulSoup(webdriver.page_source, 'html5lib')
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source, 'html5lib')
     log.debug(_('Soup: %s'), soup)
     return soup
-
 
 
 def captcha_check(url):
@@ -126,6 +121,6 @@ def captcha_check(url):
         # Pause here...
         while '/sorry/' in url:
             sleep(short=True)
-        
+
         log.info(_('Ok!'))
         sleep()

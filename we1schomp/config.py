@@ -8,176 +8,99 @@ from logging import getLogger
 
 from ruamel.yaml import YAML
 
+SETTINGS_PATH = os.getenv('WE1SCHOMP_SETTINGS_PATH', 'local')
+SETTINGS_FILE = os.getenv('WE1SCHOMP_SETTINGS_FILE', 'settings.yaml')
+SITES_FILE = os.getenv('WE1SCHOMP_SITES_FILE', 'sites.yaml')
 
-config = dict(
-
-    # Default queries/terms to use in searches.
-    QUERIES=[  # Per-site (overrides this setting): queries[]
-        'humanities',
-        'liberal arts'
-    ],
-
-    # WordPress settings.
-    WORDPRESS_ENABLE=True,  # Per-site: wpEnable
-    WORDPRESS_GET_PAGES=True,  # Per-site: wpPagesEnable
-    WORDPRESS_GET_POSTS=True,  # Per-site: wpPostsEnable
-    WORDPRESS_API_URL='/wp-json/wp/v2/',
-    WORDPRESS_PAGES_QUERY_URL='{api_url}pages?search={query}&sentence=1',
-    WORDPRESS_POSTS_QUERY_URL='{api_url}posts?search={query}&sentence=1',
-
-    # Google/direct scrape settings.
-    GOOGLE_SEARCH_ENABLE=True,  # Per-site: googleSearchEnable
-    GOOGLE_SCRAPE_ENABLE=True,  # Per-site: googleScrapeEnable
-    GOOGLE_QUERY_URL='http://google.com/search?q="{query}"+site%3A{site}&safe=off&filter=0',
-    GOOGLE_CONTENT_TAG='p',  # Per-site (overrides this setting): googleContentTag
-    GOOGLE_CONTENT_LENGTH_MIN=75,  # Per-site (overrides this setting): googleContentLengthMin
-    GOOGLE_URL_STOPWORDS=[  # Per-site (overrides this setting): googleURLStopwords
-        'keyword',
-        'author',
-        'biography',
-        'contributor',
-        'tag/',
-        'tags/',
-        'tool/',
-        'forum.',
-        'forums.',
-        'comment/',
-        'comment.',
-        'comments.',
-        '.pdf',
-        '.docx',
-        '.doc',
-        '/el/',
-        '/es/',
-        '/fr/',
-        '/de/'
-    ],
-
-    # Metadata settings.
-    DB_NAME_FORMAT='we1schomp_{query}_{site}_{slug}',
-    DB_METAPATH='Corpus,{site},Rawdata',
-    DB_NAMESPACE='we1sv2.0',
-
-    # Regex processing. Experimental!
-    # This looks for:
-    # - URL strings, common in blog posts, etc., and probably not useful for
-    #   topic modelling.
-    # - Irregular punctuation, i.e. punctuation left over from formatting
-    #   or HTML symbols that Bleach missed.
-    REGEX_ENABLE = True,
-    REGEX_STRING = r'http(.*?)\s|[^a-zA-Z0-9\s\.\,\!\"\'\-\:\;\(\)\p{Sc}]',
-
-    # Path settings.
-    FILENAME_FORMAT='we1schomp_{query}_{site}_{timestamp}_{index}.json',
-    FILE_OUTPUT_PATH=os.path.join(os.getcwd(), 'local', 'output'),
-    SETTINGS_FILE=os.path.join('local', 'settings.yaml'),
-    SITES_FILE=os.path.join('local', 'sites.yaml'),
-
-    # Logging settings.
-    LOG_FILE='we1schomp.log',
-    LOG_FORMAT='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-    CONSOLE_FORMAT='%(levelname)s: %(message)s',
-
-    # Selenium WebDriver settings.
-    WEBDRIVER_URL=os.getenv('WE1S_WEBDRIVER_URL'),
-    WEBDRIVER_SLEEP_MIN=0.5,
-    WEBDRIVER_SLEEP_MAX=5.0,
-
-    # Threading settings.
-    THREAD_POOL_SIZE = 4
-)
+CONFIG = dict()
+SITES = dict()
 
 
-sites = [
-    dict(
-        name='WhatEvery1Says',
-        slug='we1s',
-        site='we1s.ucsb.edu',
-        skip=True
-    ),
-    dict(
-        name='The Anarcho-Syndicalist Review',
-        slug='anarcho-syndicalist-review',
-        site='syndicalist.us'
-    )
-]
-
-
-def load_from_yaml(filename_settings, filename_sites):
-    """ Load sites & settings from YAML files.
+def load_config_from_yaml(filename=''):
+    """ Load the configuration file from YAML.
 
     Args:
-        filename_settings (str): Settings YAML file path.
-        filename_sites (str): Sites YAML file path.
-    
+        filename (str): File to load. This will be added to SETTINGS_PATH,
+            which can be changed in env. var. WE1SCHOMP_SETTINGS_PATH.
+
     Returns:
-        (dict, dict): settings, sites.
-
-    Raises:
-        FileNotFoundError: Use default settings.
+        dict: A copy of CONFIG.
     """
-
-    global config
-    global sites
 
     log = getLogger(__name__)
     yaml = YAML()
-    filename_settings = os.path.join('local', filename_settings)
-    filename_sites = os.path.join('local', filename_sites)
 
-    try:
-        with open(filename_settings) as yamlfile:
-            settings = yaml.load(yamlfile)
-        settings.update({'SETTINGS_FILE': 'local/settings_out.yaml'})
-        log.info(_('Loading settings file: %s'), filename_settings)
-    except FileNotFoundError:
-        log.error(_('Settings file not found: %s'), filename_settings)
-        log.warning(_('Using default settings.'))
+    if filename == '':
+        SETTINGS_FILE = filename  # pylint: disable=W0621,C0103
+    filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
 
-    try:
-        with open(filename_sites) as yamlfile:
-            sites = list(yaml.load_all(yamlfile))
-        settings.update({'SITES_FILE': 'local/sites_out.yaml'})
-        log.info(_('Loading sites file: %s'), filename_sites)
-    except FileNotFoundError:
-        log.error(_('Sites file not found: %s'), filename_sites)
-        log.warning(_('Using default sites.'))
-
-    # Make output dir if necessary.
-    if not os.path.exists(settings['FILE_OUTPUT_PATH']):
-        log.info(_('Creating output directory: %s'), settings['FILE_OUTPUT_PATH'])
-        os.makedirs(settings['FILE_OUTPUT_PATH'])
+    log.info(_('Loading settings file: %s'), filename)
+    with open(filename) as yaml_file:
+        CONFIG = yaml.load(yaml_file)  # pylint: disable=W0621,C0103
+    return CONFIG
 
 
-def save_to_yaml():
-    """ Save current sites & settings values to YAML files.
+def load_sites_from_yaml(filename=''):
+    """ Load the sites file from YAML.
 
     Args:
-        settings (dict): Settings values.
-        sites (dict): Sites.
-    
-    Returns:
-        boolean: True for success.
-    
-    TODO:
-        * Exception handling.
-    """
+        filename (str): File to load. This will be added to SETTINGS_PATH,
+            which can be changed in env. var. WE1SCHOMP_SETTINGS_PATH.
 
-    global config
-    global sites
+    Returns:
+        dict: A copy of SITES.
+    """
 
     log = getLogger(__name__)
     yaml = YAML()
-    filename_settings = config['SETTINGS_FILE']
-    filename_sites = config['SITES_FILE']
 
-    log.info(_('Saving settings: %s'), filename_settings)
-    with open(filename_settings, 'w') as yamlfile:
-        yaml.dump(config, yamlfile)
+    if filename == '':
+        SITES_FILE = filename  # pylint: disable=W0621,C0103
+    filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
-    log.info(_('Saving sites: %s'), filename_sites)
-    with open(filename_sites, 'w') as yamlfile:
-        yaml.dump_all(sites, yamlfile)
+    log.info(_('Loading sites file: %s'), filename)
+    with open(filename) as yaml_file:
+        SITES = yaml.load(yaml_file)  # pylint: disable=W0621,C0103
+    return SITES
 
-    log.info(_('Ok!'))
+
+def save_config_to_yaml():
+    """ Saves the settings file to YAML.
+
+    Filename is defined in load_settings_from_yaml() or by changing the env.
+    var. WE1SCHOMP_SETTINGS_FILE.
+
+    Returns:
+        bool: True if successful.
+    """
+
+    log = getLogger(__name__)
+    yaml = YAML()
+
+    filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
+
+    log.info(_('Saving settings: %s'), filename)
+    with open(filename, 'w') as yaml_file:
+        yaml.dump(CONFIG, yaml_file)
+    return True
+
+
+def save_sites_to_yaml():
+    """ Saves the sites file to YAML.
+
+    Filename is defined in load_sites_from_yaml() or by changing the env.
+    var. WE1SCHOMP_SITES_FILE.
+
+    Returns:
+        bool: True if successful.
+    """
+
+    log = getLogger(__name__)
+    yaml = YAML()
+
+    filename = os.path.join(SETTINGS_PATH, SITES_FILE)
+
+    log.info(_('Saving sites: %s'), filename)
+    with open(filename, 'w') as yaml_file:
+        yaml.dump(SITES, yaml_file)
     return True

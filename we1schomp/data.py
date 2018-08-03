@@ -10,12 +10,12 @@ from gettext import gettext as _
 from logging import getLogger
 
 from we1schomp import clean
-from we1schomp.config import config
+from we1schomp.config import CONFIG
 
 
 def find_json_files_in_path(path):
     """ Look for all files ending with a json extension.
-    
+
     This is a generator function and must be funnelled into a list or called as
     part of a loop.
 
@@ -46,7 +46,7 @@ def load_articles_from_json(skip_complete_files=True):
     """ Load articles stored as JSON files into memory as dicts.
 
     Args:
-        skip_complete_files (boolean): By default, this function will skip 
+        skip_complete_files (bool): By default, this function will skip
         articles that already have content. Override this by setting to False.
 
     Returns:
@@ -54,7 +54,7 @@ def load_articles_from_json(skip_complete_files=True):
     """
 
     log = getLogger(__name__)
-    path = config['FILE_OUTPUT_PATH']
+    path = CONFIG['FILE_OUTPUT_PATH']
     articles = []
     count = 0
     skipped = 0
@@ -82,16 +82,16 @@ def save_article_to_json(article, allow_overwrite=False):
 
     Args:
         article (dict): Article data to save to JSON.
-        allow_overwrite (boolean): Set to True to update old files. Since this
+        allow_overwrite (bool): Set to True to update old files. Since this
             requires rooting around in the path, it might come with a big
             performance cost in a production directory.
 
     Returns:
-        boolean: True for success.
+        bool: True for success.
     """
 
     log = getLogger(__name__)
-    path = config['FILE_OUTPUT_PATH']
+    path = CONFIG['FILE_OUTPUT_PATH']
     filename = ''
 
     # Update existing files first.
@@ -105,7 +105,7 @@ def save_article_to_json(article, allow_overwrite=False):
     # Otherwise make a new file.
     if not allow_overwrite or filename == '':
 
-        filename = config['FILENAME_FORMAT']
+        filename = CONFIG['FILENAME_FORMAT']
 
         now = time.localtime()
         timestamp = f'{now.tm_year}{now.tm_mon:02d}{now.tm_mday:02d}'
@@ -124,12 +124,12 @@ def save_article_to_json(article, allow_overwrite=False):
 
         # Increment filename index so we don't end up overwriting the last
         # thing we saved.
-        for x in range(sys.maxsize):
-            temp_filename = os.path.join(path, filename.format(index=x))
+        for index in range(sys.maxsize):
+            temp_filename = os.path.join(path, filename.format(index=index))
             if not os.path.exists(temp_filename):
                 filename = temp_filename
                 break
-        
+
         log.info(_('Saving: %s'), filename)
 
     with open(filename, 'w', encoding='utf-8') as json_file:
