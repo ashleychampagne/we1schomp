@@ -28,10 +28,12 @@ GOOGLE_URL_STOPWORDS:
 - .pdf
 - .docx
 - .doc
+- .xml
 - /el/
 - /es/
 - /fr/
 - /de/
+- /tamil/
 DB_NAME_FORMAT: we1schomp_{query}_{site}_{slug}
 DB_METAPATH: Corpus,{site},Rawdata
 DB_NAMESPACE: we1sv2.0
