@@ -30,7 +30,7 @@ def load_config_from_yaml(filename=''):
     log = getLogger(__name__)
     yaml = YAML()
 
-    if filename == '':
+    if filename != '':
         SETTINGS_FILE = filename  # pylint: disable=W0621,C0103
     filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
 
@@ -54,7 +54,7 @@ def load_sites_from_yaml(filename=''):
     log = getLogger(__name__)
     yaml = YAML()
 
-    if filename == '':
+    if filename != '':
         SITES_FILE = filename  # pylint: disable=W0621,C0103
     filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
