@@ -18,7 +18,7 @@ def main():
 
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
-    driver = browser.get_webdriver('http://harbor.english.ucsb.edu:4444/wd/hub')
+    driver = browser.get_webdriver('http://172.17.0.4:4444/wd/hub')
 
     while True:
 
