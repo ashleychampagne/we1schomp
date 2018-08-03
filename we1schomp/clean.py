@@ -9,12 +9,14 @@ import bleach
 import regex as re
 from unidecode import unidecode
 
-from we1schomp.config import CONFIG
+from we1schomp.config import Config
 
 
 def from_html(dirty):
     """ Removes problematic characters from a string.
     """
+
+    config = Config()
 
     # Start by Bleaching out the HTML.
     dirty = bleach.clean(dirty, tags=[], strip=True)
@@ -28,8 +30,8 @@ def from_html(dirty):
     dirty = unidecode(dirty)
 
     # Regex processing. Experimental!
-    if CONFIG['REGEX_ENABLE']:
-        dirty = re.sub(re.compile(CONFIG['REGEX_STRING']), ' ', dirty)
+    if config['REGEX_ENABLE']:
+        dirty = re.sub(re.compile(config['REGEX_STRING']), ' ', dirty)
 
     # Squeeze out the whitespace.
     dirty = ''.join(c for c in dirty if c in string.printable)

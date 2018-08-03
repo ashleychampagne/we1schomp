@@ -27,7 +27,7 @@ googleURLStopwords:
 - contributor/
 - .pdf
 # OPTIONAL: Skip this site completely.
-
+skip: true
 ---
 name: Z Magazine
 slug: z-mag

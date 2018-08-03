@@ -12,91 +12,93 @@ SETTINGS_PATH = 'local'
 SETTINGS_FILE = 'settings.yaml'
 SITES_FILE = 'sites.yaml'
 
-CONFIG = dict()
-SITES = dict()
 
-
-def load_config_from_yaml():
-    """ Load the configuration file from YAML.
-
-    Args:
-        filename (str): File to load. This will be added to SETTINGS_PATH,
-            which can be changed in env. var. WE1SCHOMP_SETTINGS_PATH.
-
-    Returns:
-        dict: A copy of CONFIG.
+class Config:
+    """
     """
 
-    log = getLogger(__name__)
-    yaml = YAML()
+    __config = []
 
-    filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
+    def __init__(self):
+        if self.__config == []:
+            self.load_config_from_yaml()
 
-    log.info(_('Loading settings file: %s'), filename)
-    with open(filename) as yaml_file:
-        CONFIG = yaml.load(yaml_file)  # pylint: disable=W0621,C0103
-    return CONFIG
+    def __getitem__(self, key):
+        return self.__config[key]
+
+    def __setitem__(self, key, value):
+        self.__config.update({key: value})
+
+    def load_config_from_yaml(self):
+        """ Load the configuration file from YAML.
+        """
+
+        log = getLogger(__name__)
+        yaml = YAML()
+
+        filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
+
+        log.info(_('Loading settings file: %s'), filename)
+        with open(filename) as yaml_file:
+            self.__config = yaml.load(yaml_file)
+
+    def save_to_yaml(self):
+        """ Saves the settings file to YAML.
+
+        Returns:
+            bool: True if successful.
+        """
+
+        log = getLogger(__name__)
+        yaml = YAML()
+
+        filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
+
+        log.info(_('Saving settings: %s'), filename)
+        with open(filename, 'w') as yaml_file:
+            yaml.dump(self.__config, yaml_file)
+        return True
 
 
-def load_sites_from_yaml():
-    """ Load the sites file from YAML.
-
-    Args:
-        filename (str): File to load. This will be added to SETTINGS_PATH,
-            which can be changed in env. var. WE1SCHOMP_SETTINGS_PATH.
-
-    Returns:
-        dict: A copy of SITES.
+class Sites:
+    """
     """
 
-    log = getLogger(__name__)
-    yaml = YAML()
+    __sites = []
 
-    filename = os.path.join(SETTINGS_PATH, SITES_FILE)
+    def __init__(self):
+        if self.__sites == []:
+            self.load_sites_from_yaml()
 
-    log.info(_('Loading sites file: %s'), filename)
-    with open(filename) as yaml_file:
-        SITES = yaml.load_all(yaml_file)  # pylint: disable=W0621,C0103
-    return SITES
+    def __getitem__(self, key):
+        return self.__sites[key]
 
+    def load_sites_from_yaml(self):
+        """ Load the sites file from YAML.
+        """
 
-def save_config_to_yaml():
-    """ Saves the settings file to YAML.
+        log = getLogger(__name__)
+        yaml = YAML()
 
-    Filename is defined in load_settings_from_yaml() or by changing the env.
-    var. WE1SCHOMP_SETTINGS_FILE.
+        filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
-    Returns:
-        bool: True if successful.
-    """
+        log.info(_('Loading sites file: %s'), filename)
+        with open(filename) as yaml_file:
+            self.__sites = list(yaml.load_all(yaml_file))
 
-    log = getLogger(__name__)
-    yaml = YAML()
+    def save_to_yaml(self):
+        """ Saves the sites file to YAML.
 
-    filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
+        Returns:
+            bool: True if successful.
+        """
 
-    log.info(_('Saving settings: %s'), filename)
-    with open(filename, 'w') as yaml_file:
-        yaml.dump(CONFIG, yaml_file)
-    return True
+        log = getLogger(__name__)
+        yaml = YAML()
 
+        filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
-def save_sites_to_yaml():
-    """ Saves the sites file to YAML.
-
-    Filename is defined in load_sites_from_yaml() or by changing the env.
-    var. WE1SCHOMP_SITES_FILE.
-
-    Returns:
-        bool: True if successful.
-    """
-
-    log = getLogger(__name__)
-    yaml = YAML()
-
-    filename = os.path.join(SETTINGS_PATH, SITES_FILE)
-
-    log.info(_('Saving sites: %s'), filename)
-    with open(filename, 'w') as yaml_file:
-        yaml.dump_all(SITES, yaml_file)
-    return True
+        log.info(_('Saving sites: %s'), filename)
+        with open(filename, 'w') as yaml_file:
+            yaml.dump_all(self.__sites, yaml_file)
+        return True

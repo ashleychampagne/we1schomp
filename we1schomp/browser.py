@@ -13,7 +13,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from we1schomp.config import CONFIG
+from we1schomp.config import Config
 
 
 def get_webdriver(grid_url):
@@ -36,10 +36,11 @@ def sleep(short=False, seconds=0.0):
     """
 
     log = getLogger(__name__)
+    config = Config()
 
     if seconds == 0.0:
-        seconds_min = CONFIG['WEBDRIVER_SLEEP_MIN']
-        seconds_max = CONFIG['WEBDRIVER_SLEEP_MAX']
+        seconds_min = config['WEBDRIVER_SLEEP_MIN']
+        seconds_max = config['WEBDRIVER_SLEEP_MAX']
 
         if not short:
             seconds = random.uniform(seconds_min, seconds_max)
