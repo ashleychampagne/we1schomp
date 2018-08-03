@@ -12,35 +12,38 @@ SETTINGS_PATH = 'local'
 SETTINGS_FILE = 'settings.yaml'
 SITES_FILE = 'sites.yaml'
 
+CONFIG = dict()
+SITES = list()
+
 
 def load_config_from_yaml():
     """
     """
 
-    log = getLogger(__name__)
-    yaml = YAML()
     global CONFIG
-
+    yaml = YAML()
     filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
 
-    log.info(_('Loading settings file: %s'), filename)
     with open(filename) as yaml_file:
-        CONFIG = yaml.load(yaml_file)
+        config = yaml.load(yaml_file)
+    CONFIG = config
+
+    if not os.path.exists(CONFIG['FILE_OUTPUT_PATH']):
+        os.makedirs(CONFIG['FILE_OUTPUT_PATH'])
 
 
 def load_sites_from_yaml():
     """ Load the sites file from YAML.
     """
 
-    log = getLogger(__name__)
-    yaml = YAML()
     global SITES
-
+    yaml = YAML()
     filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
-    log.info(_('Loading sites file: %s'), filename)
+    SITES = []
     with open(filename) as yaml_file:
-        SITES = list(yaml.load_all(yaml_file))
+        for site in yaml.load_all(yaml_file):
+            SITES.append(site)
 
 
 def save_config_to_yaml():
@@ -52,7 +55,6 @@ def save_config_to_yaml():
 
     log = getLogger(__name__)
     yaml = YAML()
-
     filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
 
     log.info(_('Saving settings: %s'), filename)
@@ -70,7 +72,6 @@ def save_sites_to_yaml():
 
     log = getLogger(__name__)
     yaml = YAML()
-
     filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
     log.info(_('Saving sites: %s'), filename)

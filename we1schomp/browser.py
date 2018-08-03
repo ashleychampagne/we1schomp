@@ -13,7 +13,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from we1schomp.config import CONFIG
+from we1schomp import config
 
 
 def get_webdriver(grid_url):
@@ -38,8 +38,8 @@ def sleep(short=False, seconds=0.0):
     log = getLogger(__name__)
 
     if seconds == 0.0:
-        seconds_min = CONFIG['WEBDRIVER_SLEEP_MIN']
-        seconds_max = CONFIG['WEBDRIVER_SLEEP_MAX']
+        seconds_min = config.CONFIG['WEBDRIVER_SLEEP_MIN']
+        seconds_max = config.CONFIG['WEBDRIVER_SLEEP_MAX']
 
         if not short:
             seconds = random.uniform(seconds_min, seconds_max)
@@ -108,17 +108,17 @@ def get_soup_from_selenium(url, driver):
     return soup
 
 
-def captcha_check(url):
+def captcha_check(driver):
     """ Check for a CAPTCHA and wait for intervention.
     """
 
     log = getLogger(__name__)
 
-    if '/sorry/' in url:
+    if '/sorry/' in driver.current_url:
         log.error(_('CAPTCHA detected! Waiting for human...'))
 
         # Pause here...
-        while '/sorry/' in url:
+        while '/sorry/' in driver.current_url:
             sleep(short=True)
 
         log.info(_('Ok!'))

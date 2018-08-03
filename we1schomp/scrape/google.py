@@ -6,8 +6,7 @@ from gettext import gettext as _
 from logging import getLogger
 from uuid import uuid4
 
-from we1schomp import browser, clean, data
-from we1schomp.config import CONFIG
+from we1schomp import browser, clean, config, data
 
 
 def url_has_stopword(url, site):
@@ -16,7 +15,7 @@ def url_has_stopword(url, site):
 
     log = getLogger(__name__)
 
-    stopwords = site.get('googleURLStopwords', CONFIG['GOOGLE_URL_STOPWORDS'])
+    stopwords = site.get('googleURLStopwords', config.CONFIG['GOOGLE_URL_STOPWORDS'])
     for stop in stopwords:
         if stop in url:
             log.warning(_('Skipping (has "%s"): %s'), stop, url)
@@ -57,7 +56,7 @@ def yield_articles_on_page(page_soup, site, query):
             log.warning(_('Ok (no date): %s'), url)
 
         # For Google results we'll have to gin up our own slug.
-        slug = CONFIG['DB_NAME_FORMAT'].format(
+        slug = config.CONFIG['DB_NAME_FORMAT'].format(
             site=site['slug'],
             query=clean.slugify(query),
             slug=clean.slugify(title))
@@ -65,9 +64,9 @@ def yield_articles_on_page(page_soup, site, query):
         yield dict(
             doc_id=str(uuid4()),
             attachment_id='',
-            namespace=CONFIG['DB_NAMESPACE'],
+            namespace=config.CONFIG['DB_NAMESPACE'],
             name=slug,
-            DB_METAPATH=CONFIG['DB_METAPATH'].format(site=site['slug']),
+            DB_METAPATH=config.CONFIG['DB_METAPATH'].format(site=site['slug']),
             pub=site['name'],
             pub_short=site['slug'],
             title=title,
@@ -85,22 +84,22 @@ def save_search_results(site, webdriver):
     log = getLogger(__name__)
     articles = []
 
-    if not CONFIG['GOOGLE_SEARCH_ENABLE']:
+    if not config.CONFIG['GOOGLE_SEARCH_ENABLE']:
         log.warning(_('Google Search has been disabled.'))
         return []
     if site.get('skip', False):
         log.warning(_('Skipping: %s'), site['name'])
         return []
-    if not site.get('googleSearchEnable', CONFIG['GOOGLE_SEARCH_ENABLE']):
+    if not site.get('googleSearchEnable', config.CONFIG['GOOGLE_SEARCH_ENABLE']):
         log.warning(_('Google Search disabled: %s'), site['name'])
         return []
 
     # Perform a Google Search.
-    for query in site.get('queries', CONFIG['QUERIES']):
+    for query in site.get('queries', config.CONFIG['QUERIES']):
         log.info(_('Searching Google for "%s" at: %s'), query, site['site'])
 
         # Start the query.
-        google_url = CONFIG['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
+        google_url = config.CONFIG['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
 
         # Loop over the page looking for results, then loop over the results.
         while True:
@@ -110,7 +109,7 @@ def save_search_results(site, webdriver):
 
             # Check for a CAPTCHA. If we find one, hand over execution until
             # it's gone.
-            browser.captcha_check(webdriver.current_url)
+            browser.captcha_check(webdriver)
 
             for article in yield_articles_on_page(soup, site, query):
                 articles.append(article)
@@ -120,7 +119,7 @@ def save_search_results(site, webdriver):
             if next_link is not None:
                 log.info(_('Going to next page.'))
                 browser.sleep()
-                google_url = f"google.com{next_link.get('href')}"
+                google_url = f"http://google.com{next_link.get('href')}"
                 continue
 
             log.info(_('End of results for "%s" at: %s'), query, site['site'])
@@ -186,8 +185,8 @@ def save_articles(site, webdriver=None):
         # imprecise, but it seems to work for the most part. If we're getting
         # particularly bad content for a site, we can tweak the config and
         # try again or switch to a more advanced web-scraping tool.
-        tag = site.get('googleContentTag', CONFIG['GOOGLE_CONTENT_TAG'])
-        length = site.get('googleContentLengthMin', CONFIG['GOOGLE_CONTENT_LENGTH_MIN'])
+        tag = site.get('googleContentTag', config.CONFIG['GOOGLE_CONTENT_TAG'])
+        length = site.get('googleContentLengthMin', config.CONFIG['GOOGLE_CONTENT_LENGTH_MIN'])
         content = ''
         for div in soup.find_all(tag):
             if len(div.text) > length:

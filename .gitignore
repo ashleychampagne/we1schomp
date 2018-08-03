@@ -109,4 +109,5 @@ venv
 local/
 *.bat
 *.rc
+output/
 *.log

@@ -9,8 +9,7 @@ import time
 from gettext import gettext as _
 from logging import getLogger
 
-from we1schomp import clean
-from we1schomp.config import CONFIG
+from we1schomp import config, clean
 
 
 def find_json_files_in_path(path):
@@ -54,7 +53,7 @@ def load_articles_from_json(skip_complete_files=True):
     """
 
     log = getLogger(__name__)
-    path = CONFIG['FILE_OUTPUT_PATH']
+    path = config.CONFIG['FILE_OUTPUT_PATH']
     articles = []
     count = 0
     skipped = 0
@@ -91,7 +90,7 @@ def save_article_to_json(article, allow_overwrite=False):
     """
 
     log = getLogger(__name__)
-    path = CONFIG['FILE_OUTPUT_PATH']
+    path = config.CONFIG['FILE_OUTPUT_PATH']
     filename = ''
 
     # Update existing files first.
@@ -105,7 +104,7 @@ def save_article_to_json(article, allow_overwrite=False):
     # Otherwise make a new file.
     if not allow_overwrite or filename == '':
 
-        filename = CONFIG['FILENAME_FORMAT']
+        filename = config.CONFIG['FILENAME_FORMAT']
 
         now = time.localtime()
         timestamp = f'{now.tm_year}{now.tm_mon:02d}{now.tm_mday:02d}'

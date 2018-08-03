@@ -1,7 +1,7 @@
 QUERIES:
 - humanities
 - liberal arts
-WORDPRESS_ENABLE: true
+WORDPRESS_ENABLE: false
 WORDPRESS_GET_PAGES: true
 WORDPRESS_GET_POSTS: true
 WORDPRESS_API_URL: /wp-json/wp/v2/
