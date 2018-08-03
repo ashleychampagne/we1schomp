@@ -7,7 +7,7 @@ WORDPRESS_GET_POSTS: true
 WORDPRESS_API_URL: /wp-json/wp/v2/
 WORDPRESS_PAGES_QUERY_URL: '{api_url}pages?search={query}&sentence=1'
 WORDPRESS_POSTS_QUERY_URL: '{api_url}posts?search={query}&sentence=1'
-GOOGLE_SEARCH_ENABLE: true
+GOOGLE_SEARCH_ENABLE: false
 GOOGLE_SCRAPE_ENABLE: true
 GOOGLE_QUERY_URL: http://google.com/search?q="{query}"+site%3A{site}&safe=off&filter=0
 GOOGLE_CONTENT_TAG: p
@@ -38,7 +38,7 @@ DB_NAMESPACE: we1sv2.0
 REGEX_ENABLE: true
 REGEX_STRING: http(.*?)\s|[^a-zA-Z0-9\s\.\,\!\"\'\-\:\;\(\)\p{Sc}]
 FILENAME_FORMAT: we1schomp_{query}_{site}_{timestamp}_{index}.json
-FILE_OUTPUT_PATH: output
+FILE_OUTPUT_PATH: local/output
 SETTINGS_FILE: local/settings.yaml
 SITES_FILE: local/sites.yaml
 LOG_FILE: we1schomp.log

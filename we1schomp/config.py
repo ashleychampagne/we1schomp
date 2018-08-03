@@ -28,7 +28,6 @@ def load_config_from_yaml():
         config = yaml.load(yaml_file)
     CONFIG = config
 
-    CONFIG['FILE_OUTPUT_PATH'] = os.path.join(LOCAL_PATH, CONFIG['FILE_OUTPUT_PATH'])
     if not os.path.exists(CONFIG['FILE_OUTPUT_PATH']):
         os.makedirs(CONFIG['FILE_OUTPUT_PATH'])
 

@@ -107,10 +107,6 @@ def save_search_results(site, webdriver):
             browser.sleep()
             soup = browser.get_soup_from_selenium(google_url, webdriver)
 
-            # Check for a CAPTCHA. If we find one, hand over execution until
-            # it's gone.
-            browser.captcha_check(webdriver)
-
             for article in yield_articles_on_page(soup, site, query):
                 articles.append(article)
                 data.save_article_to_json(article)
@@ -128,6 +124,7 @@ def save_search_results(site, webdriver):
     log.info(_('Google search complete for site: %s'), site['name'])
     log.debug(_('Disabling Google Search for site: %s'), site['name'])
     site.update({'googleSearchEnable': False})
+    config.save_sites_to_yaml()
 
     return articles
 
@@ -194,7 +191,7 @@ def save_articles(site, webdriver=None):
         content = clean.from_html(content)
 
         article['content'] = content
-        data.save_article_to_json(article)
+        data.save_article_to_json(article, allow_overwrite=True)
 
     log.info(_('Google scrape complete for site: %s'), site['name'])
     log.debug(_('Setting site to "skip": %s'), site['name'])

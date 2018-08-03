@@ -38,14 +38,17 @@ skip: true
 name: World Socialist Website
 slug: wsws
 site: wsws.org
+skip: true
 ---
 name: The Utne Reader
 slug: utne
 site: utne.com
+googleSearchEnable: false
 ---
 name: Truthdig
 slug: truthdig
 site: truthdig.com
+googleSearchEnable: false
 ---
 name: Threepenny Review
 slug: threepenny-review

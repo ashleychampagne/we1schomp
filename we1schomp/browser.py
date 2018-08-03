@@ -103,17 +103,8 @@ def get_soup_from_selenium(url, driver):
 
     log.info(_('Selenium: %s'), url)
     driver.get(url)
-    soup = BeautifulSoup(driver.page_source, 'html5lib')
-    log.debug(_('Soup: %s'), soup)
-    return soup
 
-
-def captcha_check(driver):
-    """ Check for a CAPTCHA and wait for intervention.
-    """
-
-    log = getLogger(__name__)
-
+    # Check for a CAPTCHA.
     if '/sorry/' in driver.current_url:
         log.error(_('CAPTCHA detected! Waiting for human...'))
 
@@ -123,3 +114,7 @@ def captcha_check(driver):
 
         log.info(_('Ok!'))
         sleep()
+
+    soup = BeautifulSoup(driver.page_source, 'html5lib')
+    log.debug(_('Soup: %s'), soup)
+    return soup
