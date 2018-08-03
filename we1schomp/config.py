@@ -12,24 +12,24 @@ LOCAL_PATH = 'local'
 SETTINGS_FILE = 'settings.yaml'
 SITES_FILE = 'sites.yaml'
 
-CONFIG = dict()
+SETTINGS = dict()
 SITES = list()
 
 
-def load_config_from_yaml():
+def load_settings_from_yaml():
     """
     """
 
-    global CONFIG
+    global SETTINGS
     yaml = YAML()
     filename = os.path.join(LOCAL_PATH, SETTINGS_FILE)
 
     with open(filename) as yaml_file:
         config = yaml.load(yaml_file)
-    CONFIG = config
+    SETTINGS = config
 
-    if not os.path.exists(CONFIG['FILE_OUTPUT_PATH']):
-        os.makedirs(CONFIG['FILE_OUTPUT_PATH'])
+    if not os.path.exists(SETTINGS['FILE_OUTPUT_PATH']):
+        os.makedirs(SETTINGS['FILE_OUTPUT_PATH'])
 
 
 def load_sites_from_yaml():
@@ -59,11 +59,11 @@ def save_config_to_yaml():
 
     log.info(_('Saving settings: %s'), filename)
     with open(filename, 'w') as yaml_file:
-        yaml.dump(CONFIG, yaml_file)
+        yaml.dump(SETTINGS, yaml_file)
     return True
 
 
-def save_sites_to_yaml():
+def save_settings_to_yaml():
     """ Saves the sites file to YAML.
 
     Returns:

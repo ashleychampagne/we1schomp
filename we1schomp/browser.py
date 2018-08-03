@@ -36,10 +36,11 @@ def sleep(short=False, seconds=0.0):
     """
 
     log = getLogger(__name__)
+    CONFIG = config.SETTINGS
 
     if seconds == 0.0:
-        seconds_min = config.CONFIG['WEBDRIVER_SLEEP_MIN']
-        seconds_max = config.CONFIG['WEBDRIVER_SLEEP_MAX']
+        seconds_min = CONFIG['WEBDRIVER_SLEEP_MIN']
+        seconds_max = CONFIG['WEBDRIVER_SLEEP_MAX']
 
         if not short:
             seconds = random.uniform(seconds_min, seconds_max)

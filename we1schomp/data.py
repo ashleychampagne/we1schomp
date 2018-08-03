@@ -53,7 +53,8 @@ def load_articles_from_json(skip_complete_files=True):
     """
 
     log = getLogger(__name__)
-    path = config.CONFIG['FILE_OUTPUT_PATH']
+    CONFIG = config.SETTINGS
+    path = CONFIG['FILE_OUTPUT_PATH']
     articles = []
     count = 0
     skipped = 0
@@ -90,7 +91,8 @@ def save_article_to_json(article, allow_overwrite=False):
     """
 
     log = getLogger(__name__)
-    path = config.CONFIG['FILE_OUTPUT_PATH']
+    CONFIG = config.SETTINGS
+    path = CONFIG['FILE_OUTPUT_PATH']
     filename = ''
 
     # Update existing files first.
@@ -104,7 +106,7 @@ def save_article_to_json(article, allow_overwrite=False):
     # Otherwise make a new file.
     if not allow_overwrite or filename == '':
 
-        filename = config.CONFIG['FILENAME_FORMAT']
+        filename = CONFIG['FILENAME_FORMAT']
 
         now = time.localtime()
         timestamp = f'{now.tm_year}{now.tm_mon:02d}{now.tm_mday:02d}'
@@ -118,8 +120,7 @@ def save_article_to_json(article, allow_overwrite=False):
             index='{index}',
             timestamp=timestamp,
             site=article['pub_short'],
-            query=query
-        )
+            query=query)
 
         # Increment filename index so we don't end up overwriting the last
         # thing we saved.
