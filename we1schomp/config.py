@@ -9,7 +9,7 @@ from logging import getLogger
 from ruamel.yaml import YAML
 
 
-default_config = dict(
+config = dict(
 
     # Default queries/terms to use in searches.
     QUERIES=[  # Per-site (overrides this setting): queries[]
@@ -81,11 +81,14 @@ default_config = dict(
     # Selenium WebDriver settings.
     WEBDRIVER_URL=os.getenv('WE1S_WEBDRIVER_URL'),
     WEBDRIVER_SLEEP_MIN=0.5,
-    WEBDRIVER_SLEEP_MAX=5.0
+    WEBDRIVER_SLEEP_MAX=5.0,
+
+    # Threading settings.
+    THREAD_POOL_SIZE = 4
 )
 
 
-default_sites = [
+sites = [
     dict(
         name='WhatEvery1Says',
         slug='we1s',
@@ -114,6 +117,9 @@ def load_from_yaml(filename_settings, filename_sites):
         FileNotFoundError: Use default settings.
     """
 
+    global config
+    global sites
+
     log = getLogger(__name__)
     yaml = YAML()
     filename_settings = os.path.join('local', filename_settings)
@@ -125,17 +131,15 @@ def load_from_yaml(filename_settings, filename_sites):
         settings.update({'SETTINGS_FILE': 'local/settings_out.yaml'})
         log.info(_('Loading settings file: %s'), filename_settings)
     except FileNotFoundError:
-        settings = default_config
         log.error(_('Settings file not found: %s'), filename_settings)
         log.warning(_('Using default settings.'))
-    
+
     try:
         with open(filename_sites) as yamlfile:
             sites = list(yaml.load_all(yamlfile))
         settings.update({'SITES_FILE': 'local/sites_out.yaml'})
         log.info(_('Loading sites file: %s'), filename_sites)
     except FileNotFoundError:
-        sites = default_sites
         log.error(_('Sites file not found: %s'), filename_sites)
         log.warning(_('Using default sites.'))
 
@@ -144,10 +148,8 @@ def load_from_yaml(filename_settings, filename_sites):
         log.info(_('Creating output directory: %s'), settings['FILE_OUTPUT_PATH'])
         os.makedirs(settings['FILE_OUTPUT_PATH'])
 
-    return settings, sites
 
-
-def save_to_yaml(settings, sites):
+def save_to_yaml():
     """ Save current sites & settings values to YAML files.
 
     Args:
@@ -161,14 +163,17 @@ def save_to_yaml(settings, sites):
         * Exception handling.
     """
 
+    global config
+    global sites
+
     log = getLogger(__name__)
     yaml = YAML()
-    filename_settings = settings['SETTINGS_FILE']
-    filename_sites = settings['SITES_FILE']
+    filename_settings = config['SETTINGS_FILE']
+    filename_sites = config['SITES_FILE']
 
     log.info(_('Saving settings: %s'), filename_settings)
     with open(filename_settings, 'w') as yamlfile:
-        yaml.dump(settings, yamlfile)
+        yaml.dump(config, yamlfile)
 
     log.info(_('Saving sites: %s'), filename_sites)
     with open(filename_sites, 'w') as yamlfile:

@@ -10,6 +10,7 @@ from gettext import gettext as _
 from logging import getLogger
 
 from we1schomp import clean
+from we1schomp.config import config
 
 
 def find_json_files_in_path(path):
@@ -41,11 +42,10 @@ def find_json_files_in_path(path):
         yield json_data, filename
 
 
-def load_articles_from_json(config, skip_complete_files=True):
+def load_articles_from_json(skip_complete_files=True):
     """ Load articles stored as JSON files into memory as dicts.
 
     Args:
-        config (dict): Configuration information, including file path.
         skip_complete_files (boolean): By default, this function will skip 
         articles that already have content. Override this by setting to False.
 
@@ -77,12 +77,11 @@ def load_articles_from_json(config, skip_complete_files=True):
     return articles
 
 
-def save_article_to_json(article, config, allow_overwrite=False):
+def save_article_to_json(article, allow_overwrite=False):
     """ Save an article to JSON according to the WE1Sv2.0 schema.
 
     Args:
         article (dict): Article data to save to JSON.
-        config (dict): Configuration information, including file formatting.
         allow_overwrite (boolean): Set to True to update old files. Since this
             requires rooting around in the path, it might come with a big
             performance cost in a production directory.

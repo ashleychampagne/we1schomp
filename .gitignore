@@ -106,8 +106,7 @@ venv.bak/
 # we1schomp
 .vscode/
 venv
-output/
+local/
 *.bat
 *.rc
 *.log
-local.ini

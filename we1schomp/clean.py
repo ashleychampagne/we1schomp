@@ -9,16 +9,11 @@ import bleach
 import regex as re
 from unidecode import unidecode
 
+from we1schomp.config import config
 
-def from_html(dirty, config):
+
+def from_html(dirty):
     """ Process data that probably contained HTML.
-
-    Args:
-        dirty (str): Input data.
-        config (dict): Configuration information, including regex formatting
-    
-    Returns:
-        str: A clean string, safe for processing.
 
     TODO:
         * Regex string needs further testing.

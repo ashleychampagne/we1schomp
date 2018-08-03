@@ -1,87 +1,50 @@
-# Queries/terms to use in searches.
-QUERIES:  # Per-site (overrides this setting): queries[]
- - humanities
- - liberal arts
-
-# WordPress settings.
-# Enable the WordPress scraper.
-WORDPRESS_ENABLE: true  # Per-site: wpEnable
-# Look for WordPress pages when scraping.
-WORDPRESS_GET_PAGES: true  # Per-site: wpGetPages
-# Look for WordPress posts when scraping.
-WORDPRESS_GET_POSTS: true  # Per-site: wpGetPosts
-# Base WordPress API URL to use.
-WORDPRESS_API_URL: "/wp-json/wp/v2/"
-# WordPress query APIs to use. These will be added on to the base API URL.
-WORDPRESS_PAGES_QUERY_URL: "{api_url}pages?search={query}&sentence=1"
-WORDPRESS_POSTS_QUERY_URL: "{api_url}posts?search={query}&sentence=1"
-
-# Google/direct scrape settings.
-# Enable Google searching.
-GOOGLE_SEARCH_ENABLE: true  # Per-site: googleSearchEnable
-# Enable direct scraping.
-GOOGLE_SCRAPE_ENABLE: true  # Per-site: googleScrapeEnable
-# Base Google query URL to use.
-GOOGLE_QUERY_URL: "http://google.com/search?q=\"{query}\"+site%3A{site}&safe=off&filter=0"
-# Default tag to look for when assembling content in direct scraping.
-GOOGLE_CONTENT_TAG: p  # Per-site (overrides this setting): googleContentTag
-# Direct scraping will ignore any tag text with fewer characters than this.
-GOOGLE_CONTENT_LENGTH_MIN: 75  # Per-site (overrides this setting): googleContentLengthMin
-# Google search results will not include any URLs containing these phrases.
-GOOGLE_URL_STOPWORDS:  # Per-site (overrides this setting): googleURLStopwords
- - keyword
- - author
- - biography
- - contributor
- - tag/
- - tags/
- - tool/
- - forum.
- - forums.
- - comment/
- - comment.
- - comments.
- - .pdf
- - .docx
- - .doc
- - /el/
- - /es/
- - /fr/
- - /de/
-
-# Regex processing. Experimental!
-# This looks for:
-# - URL strings, common in blog posts, etc., and probably not useful for
-#   topic modelling.
-# - Irregular punctuation, i.e. punctuation left over from formatting
-#   or HTML symbols that Bleach missed.
-REGEX_ENABLE: true
-REGEX_STRING: http(.*?)\s|[^a-zA-Z0-9\s\.\,\!\"\'\-\:\;\\(\)p{Sc}]
-
-# Metadata.
-# Format to use for article['name']. This is presumably used internally by MongoDB
-# and should be reasonably unique. {slug} is a slug-ified version of the article's title.
+QUERIES:
+- humanities
+- liberal arts
+WORDPRESS_ENABLE: true
+WORDPRESS_GET_PAGES: true
+WORDPRESS_GET_POSTS: true
+WORDPRESS_API_URL: /wp-json/wp/v2/
+WORDPRESS_PAGES_QUERY_URL: '{api_url}pages?search={query}&sentence=1'
+WORDPRESS_POSTS_QUERY_URL: '{api_url}posts?search={query}&sentence=1'
+GOOGLE_SEARCH_ENABLE: true
+GOOGLE_SCRAPE_ENABLE: true
+GOOGLE_QUERY_URL: http://google.com/search?q="{query}"+site%3A{site}&safe=off&filter=0
+GOOGLE_CONTENT_TAG: p
+GOOGLE_CONTENT_LENGTH_MIN: 75
+GOOGLE_URL_STOPWORDS:
+- keyword
+- author
+- biography
+- contributor
+- tag/
+- tags/
+- tool/
+- forum.
+- forums.
+- comment/
+- comment.
+- comments.
+- .pdf
+- .docx
+- .doc
+- /el/
+- /es/
+- /fr/
+- /de/
 DB_NAME_FORMAT: we1schomp_{query}_{site}_{slug}
-# MongoDB metapath.
 DB_METAPATH: Corpus,{site},Rawdata
-# Schema version.
 DB_NAMESPACE: we1sv2.0
-
-# Path settings.
-# Filename format to save to. This should be indexed and otherwise reasonably unique.
+REGEX_ENABLE: true
+REGEX_STRING: http(.*?)\s|[^a-zA-Z0-9\s\.\,\!\"\'\-\:\;\(\)\p{Sc}]
 FILENAME_FORMAT: we1schomp_{query}_{site}_{timestamp}_{index}.json
-# Path to save files to. Full or relative to the application's working directory.
-FILE_OUTPUT_PATH: "./local/output"
-
-# Log settings.
-# Log file + path relative to the application's working directory.
+FILE_OUTPUT_PATH: /home/sgill/Projects/we1schomp/local/output
+SETTINGS_FILE: local/settings.yaml
+SITES_FILE: local/sites.yaml
 LOG_FILE: we1schomp.log
-# Log file & console formats. See https://docs.python.org/3/library/logging.html#formatter-objects
-LOG_FORMAT: "%(asctime)s   %(name)s   %(levelname)s: %(message)s"
-CONSOLE_FORMAT: "%(levelname)s: %(message)s"
-
-# Selenium WebDriver settings.
-#WEBDRIVER_URL -- set with environment variable WE1SCHOMP_WEBDRIVER_URL
-# Min & max sleep time, in seconds. This is also used for urrllib requests.
+LOG_FORMAT: '%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+CONSOLE_FORMAT: '%(levelname)s: %(message)s'
+WEBDRIVER_URL: http://harbor.english.ucsb.edu:4444/wd/hub
 WEBDRIVER_SLEEP_MIN: 0.5
-WEBDRIVER_SLEEP_MAX: 5
+WEBDRIVER_SLEEP_MAX: 5.0
+THREAD_POOL_SIZE: 4

@@ -11,29 +11,15 @@ import selenium
 from we1schomp import browser
 from we1schomp import clean
 from we1schomp import data
+from we1schomp.config import config
 
 
-def url_has_stopword(url, site, config):
-    """ Return "True" if the url has a site's stopword.
-    """
-
-    log = getLogger(__name__)
-
-    stopwords = site.get('googleURLStopwords', config['GOOGLE_URL_STOPWORDS'])
-    for stop in stopwords:
-        if stop in url:
-            log.warning(_('Skipping (has "%s"): %s'), stop, url)
-            return True
-    
-    return False
-
-
-def yield_search_results(site, config, webdriver):
+def save_search_results(site, webdriver):
     """
     """
 
     log = getLogger(__name__)
-    print()
+    articles = []
 
     if not config['GOOGLE_SEARCH_ENABLE']:
         log.warning(_('Google Search has been disabled.'))
@@ -44,7 +30,8 @@ def yield_search_results(site, config, webdriver):
     if not site.get('googleSearchEnable', config['GOOGLE_SEARCH_ENABLE']):
         log.warning(_('Google Search disabled: %s'), site['name'])
         return []
-    
+
+    # Perform a Google Search.    
     for query in site.get('queries', config['QUERIES']):
         log.info(_('Searching Google for "%s" at: %s'), query, site['site'])
 
@@ -54,80 +41,96 @@ def yield_search_results(site, config, webdriver):
         # Loop over the page looking for results, then loop over the results.
         while True:
 
-            browser.sleep(config)
-            soup = browser.get_soup_from_url(google_url, config, webdriver, force_selenium=True)
+            browser.sleep()
+            soup = browser.get_soup_from_selenium(google_url, webdriver)
 
             # Check for a CAPTCHA. If we find one, hand over execution until
             # it's gone.
-            browser.captcha_check(webdriver.current_url, config)
+            browser.captcha_check(webdriver.current_url)
 
-            for div in soup.find_all('div', {'class': 'rc'}):
-
-                # The link will be the first anchor in the rc div.
-                link = div.find('a')
-                url = str(link.get('href')).lower()
-                log.debug(_('Found Google result: %s'), url)
-
-                if url_has_stopword(url, site, config):
-                    continue
-
-                # Sometimes the link's URL gets mushed in with the text. It also
-                # should be cleaned of HTML symbols (&lt;, etc.).
-                title = clean.from_html(str(link.text).split('http')[0], config)
-
-                # Parse date from result. This is much more consistant than
-                # doing it from the articles themselves, but it can be a little
-                # spotty. TODO: Refactor this to catch relative dates.
-                try:
-                    date = div.find('span', {'class': 'f'}).text
-                    date = str(date).replace(' - ', '')
-                    log.info(_('Ok: %s'), url)
-                except AttributeError:
-                    date = 'N.D.'
-                    log.warning(_('Ok (no date): %s'), url)
-
-                # For Google results we'll have to gin up our own slug.
-                slug = config['DB_NAME_FORMAT'].format(
-                    site=site['slug'],
-                    query=clean.slugify(query),
-                    slug=clean.slugify(title))   
-
-                yield dict(
-                    doc_id=str(uuid4()),
-                    attachment_id='',
-                    namespace=config['DB_NAMESPACE'],
-                    name=slug,
-                    DB_METAPATH=config['DB_METAPATH'].format(site=site['slug']),
-                    pub=site['name'],
-                    pub_short=site['slug'],
-                    title=title,
-                    url=url,
-                    content='',  # We don't have content yet--we'll get that next.
-                    search_term=query)
+            for article in yield_articles_on_page(soup, site, query):
+                articles.append(article)
+                data.save_article_to_json(article)
         
-            try:
-                next_link = webdriver.find_element_by_id('pnnext')
-            except selenium.common.exceptions.NoSuchElementException:
-                log.info(_('End of results for "%s" at: %s'), query, site['site'])
-                break
+            next_link = soup.find('a', {'id': 'pnnext'})
+            if next_link is not None:
+                log.info(_('Going to next page.'))
+                browser.sleep()
+                google_url = f"google.com{next_link.get('href')}"
+                continue
+
+            log.info(_('End of results for "%s" at: %s'), query, site['site'])
+            break
         
-            log.info(_('Going to next page.'))
-            browser.sleep(config)
-            google_url = str(next_link.get('href'))
+            
 
     log.info(_('Google search complete for site: %s'), site['name'])
+    log.debug(_('Disabling Google Search for site: %s'), site['name'])
+    site.update({'googleSearchEnable': False})
+
+    return articles
 
 
-def get_content(site, config, webdriver):
+def yield_articles_on_page(page_soup, site, query):
     """
     """
 
     log = getLogger(__name__)
-    print()
+
+    for div in page_soup.find_all('div', {'class': 'rc'}):
+
+        # The link will be the first anchor in the rc div.
+        link = div.find('a')
+        url = str(link.get('href')).lower()
+        log.debug(_('Found Google result: %s'), url)
+
+        if url_has_stopword(url, site):
+            continue
+
+        # Sometimes the link's URL gets mushed in with the text. It also
+        # should be cleaned of HTML symbols (&lt;, etc.).
+        title = clean.from_html(str(link.text).split('http')[0])
+
+        # Parse date from result. This is much more consistant than
+        # doing it from the articles themselves, but it can be a little
+        # spotty. TODO: Refactor this to catch relative dates.
+        try:
+            date = div.find('span', {'class': 'f'}).text
+            date = str(date).replace(' - ', '')
+            log.info(_('Ok: %s'), url)
+        except AttributeError:
+            date = 'N.D.'
+            log.warning(_('Ok (no date): %s'), url)
+
+        # For Google results we'll have to gin up our own slug.
+        slug = config['DB_NAME_FORMAT'].format(
+            site=site['slug'],
+            query=clean.slugify(query),
+            slug=clean.slugify(title))   
+
+        yield dict(
+            doc_id=str(uuid4()),
+            attachment_id='',
+            namespace=config['DB_NAMESPACE'],
+            name=slug,
+            DB_METAPATH=config['DB_METAPATH'].format(site=site['slug']),
+            pub=site['name'],
+            pub_short=site['slug'],
+            title=title,
+            url=url,
+            content='',  # We don't have content yet--we'll get that next.
+            search_term=query)
+
+
+def save_articles(site, webdriver=None):
+    """
+    """
+
+    log = getLogger(__name__)
 
     # Get all the articles associated with this site.
     articles = []
-    for article in data.load_articles_from_json(config):
+    for article in data.load_articles_from_json():
         if article['pub_short'] == site['slug']:
             articles.append(article)
     if articles == []:
@@ -139,11 +142,17 @@ def get_content(site, config, webdriver):
     for article in articles:
 
         # Don't waste time on this site if we've updated the stopwords.
-        if url_has_stopword(article['url'], site, config):
+        if url_has_stopword(article['url'], site):
             continue
 
-        browser.sleep(config)
-        soup = browser.get_soup_from_url(article['url'], config, webdriver)
+        browser.sleep()
+        if not webdriver:
+            soup = browser.get_soup_from_url(article['url'])
+            if not soup:
+                log.warning(_('Could not scrape site with URLLib: %s'), site['name'])
+                continue
+        else:
+            soup = browser.get_soup_from_selenium(article['url'], webdriver)
 
         # Start by getting rid of JavaScript--Bleach will "neuter" this but
         # has trouble removing it completely.
@@ -172,9 +181,28 @@ def get_content(site, config, webdriver):
         for div in soup.find_all(tag):
             if len(div.text) > length:
                 content += f' {div.text}'
-        content = clean.from_html(content, config)
-        
-        article.update({'content': content})
-        yield article
+        content = clean.from_html(content)
 
+        article['content'] = content
+        data.save_article_to_json(article)
+        
     log.info(_('Google scrape complete for site: %s'), site['name'])
+    log.debug(_('Setting site to "skip": %s'), site['name'])
+    site.update({'skip': True})
+
+    return articles
+
+
+def url_has_stopword(url, site):
+    """ Return "True" if the url has a site's stopword.
+    """
+
+    log = getLogger(__name__)
+
+    stopwords = site.get('googleURLStopwords', config['GOOGLE_URL_STOPWORDS'])
+    for stop in stopwords:
+        if stop in url:
+            log.warning(_('Skipping (has "%s"): %s'), stop, url)
+            return True
+    
+    return False
