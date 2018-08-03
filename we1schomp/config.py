@@ -8,9 +8,9 @@ from logging import getLogger
 
 from ruamel.yaml import YAML
 
-SETTINGS_PATH = os.getenv('WE1SCHOMP_SETTINGS_PATH', 'local')
-SETTINGS_FILE = os.getenv('WE1SCHOMP_SETTINGS_FILE', 'settings.yaml')
-SITES_FILE = os.getenv('WE1SCHOMP_SITES_FILE', 'sites.yaml')
+SETTINGS_PATH = 'local'
+SETTINGS_FILE = 'settings.yaml'
+SITES_FILE = 'sites.yaml'
 
 CONFIG = dict()
 SITES = dict()
@@ -30,8 +30,6 @@ def load_config_from_yaml(filename=''):
     log = getLogger(__name__)
     yaml = YAML()
 
-    if filename != '':
-        SETTINGS_FILE = filename  # pylint: disable=W0621,C0103
     filename = os.path.join(SETTINGS_PATH, SETTINGS_FILE)
 
     log.info(_('Loading settings file: %s'), filename)
@@ -54,8 +52,6 @@ def load_sites_from_yaml(filename=''):
     log = getLogger(__name__)
     yaml = YAML()
 
-    if filename != '':
-        SITES_FILE = filename  # pylint: disable=W0621,C0103
     filename = os.path.join(SETTINGS_PATH, SITES_FILE)
 
     log.info(_('Loading sites file: %s'), filename)
