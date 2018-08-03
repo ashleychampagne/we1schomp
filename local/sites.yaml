@@ -29,11 +29,9 @@ googleURLStopwords:
 # OPTIONAL: Skip this site completely.
 
 ---
-     # Each new site should begin with ---
 name: Z Magazine
 slug: z-mag
 site: zcomm.org
-
 ---
 name: World Socialist Website
 slug: wsws
@@ -58,7 +56,6 @@ site: this.org
 name: ThinkProgress
 slug: thinkprogress
 site: thinkprogress.org
-
 ---
 name: The Root
 slug: root-mag
@@ -91,12 +88,10 @@ site: thebaffler.com
 name: Talking Points Memo
 slug: talking-points-memo
 site: talkingpointsmemo.com
-
 ---
 name: Anarcho-Syndicalist Review
 slug: anarcho-syndicalist-review
 site: syndicalist.us
-
 ---
 name: Splinter News
 slug: splinter-news
@@ -113,7 +108,6 @@ site: shareblue.com
 name: Right Wing Watch
 slug: right-wing-watch
 site: rightwingwatch.org
-wpEnable: false
 ---
 name: Revolution
 slug: revolution
@@ -130,12 +124,10 @@ site: progressive.org
 name: Popular Resistance
 slug: popular-resistance
 site: popularresistance.org
-
 ---
 name: The People's World
 slug: peoples-world
 site: peoplesworld.org
-wpEnable: false
 ---
 name: n+1
 slug: n-plus-one
@@ -160,7 +152,6 @@ site: moveon.org
 name: Mother Jones
 slug: mother-jones
 site: motherjones.com
-
 ---
 name: The Monthly Review
 slug: monthly-review
@@ -169,7 +160,6 @@ site: monthlyreview.org
 name: Marxism-Leninism Today
 slug: marxism-leninism-today
 site: mltoday.com
-
 ---
 name: LibCom.org
 slug: libcom
@@ -226,7 +216,6 @@ site: dollarsandsense.org
 name: Dissent
 slug: dissent
 site: dissentmagazine.org
-wpEnable: false
 ---
 name: Democracy Now!
 slug: democracy-now
@@ -255,4 +244,3 @@ site: bostonreview.net
 name: 50 States of Blue
 slug: fifty-states-of-blue
 site: 50statesofblue.com
-

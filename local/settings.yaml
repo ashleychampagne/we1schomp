@@ -38,7 +38,7 @@ DB_NAMESPACE: we1sv2.0
 REGEX_ENABLE: true
 REGEX_STRING: http(.*?)\s|[^a-zA-Z0-9\s\.\,\!\"\'\-\:\;\(\)\p{Sc}]
 FILENAME_FORMAT: we1schomp_{query}_{site}_{timestamp}_{index}.json
-FILE_OUTPUT_PATH: /home/sgill/Projects/we1schomp/local/output
+FILE_OUTPUT_PATH: output
 SETTINGS_FILE: local/settings.yaml
 SITES_FILE: local/sites.yaml
 LOG_FILE: we1schomp.log
@@ -47,4 +47,4 @@ CONSOLE_FORMAT: '%(levelname)s: %(message)s'
 WEBDRIVER_URL: http://harbor.english.ucsb.edu:4444/wd/hub
 WEBDRIVER_SLEEP_MIN: 0.5
 WEBDRIVER_SLEEP_MAX: 5.0
-THREAD_POOL_SIZE: 4
+THREAD_POOL_SIZE: 8

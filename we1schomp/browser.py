@@ -16,11 +16,10 @@ from selenium import webdriver
 from we1schomp.config import CONFIG
 
 
-def get_webdriver():
+def get_webdriver(grid_url):
     """ Get a handle to the Selenium webdriver or make a new one.
     """
 
-    grid_url = CONFIG['WEBDRIVER_URL']
     capabilities = webdriver.DesiredCapabilities.CHROME
     __webdriver = webdriver.Remote(
         desired_capabilities=capabilities, command_executor=grid_url)

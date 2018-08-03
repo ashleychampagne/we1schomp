@@ -2,6 +2,7 @@
 """
 
 import logging
+import os
 from gettext import gettext as _
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -21,7 +22,7 @@ def main():
     """
 
     log = logging.getLogger(__name__)
-    driver = browser.get_webdriver()
+    driver = browser.get_webdriver(os.getenv('WE1SCHOMP_WEBDRIVER_URL'))
 
     while True:
 
