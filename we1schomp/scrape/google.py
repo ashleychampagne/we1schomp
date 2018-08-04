@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
-""" Scraping tools for the WordPress API.
+""" Scraping tools for Google.
 """
 
+from functools import partial
 from gettext import gettext as _
 from logging import getLogger
 from uuid import uuid4
@@ -9,7 +10,28 @@ from uuid import uuid4
 from we1schomp import browser, clean, config, data
 
 
-def url_has_stopword(url, site):
+def is_selenium_site(site):
+    """
+    """
+
+    log = getLogger(__name__)
+
+    if site['seleniumCollection']:
+        log.info(_('URLLib disabled: %s'), site)
+        return True
+
+    # Try to get the site's content. If we fail, it may be because the site
+    # has generic GET methods blocked and we'll have to use Selenium.
+    log.debug(_('Testing URLLib for site: %s'), site['name'])
+    soup = browser.get_soup_from_url(site['url'])
+    if not soup:
+        log.info(_('URLLib disabled: %s'), site['name'])
+        site['seleniumCollection'] = True
+        return True
+    return False
+
+
+def is_stopword_in_url(url, site):
     """ Return "True" if the url has a site's stopword.
     """
 
@@ -21,98 +43,53 @@ def url_has_stopword(url, site):
         if stop in url:
             log.warning(_('Skipping (has "%s"): %s'), stop, url)
             return True
-
     return False
 
 
-def yield_articles_on_page(page_soup, site, query):
+def yield_query_results(site, driver):
     """
     """
 
     log = getLogger(__name__)
     CONFIG = config.SETTINGS
 
-    for div in page_soup.find_all('div', {'class': 'rc'}):
-
-        # The link will be the first anchor in the rc div.
-        link = div.find('a')
-        url = str(link.get('href')).lower()
-        log.debug(_('Found Google result: %s'), url)
-
-        if url_has_stopword(url, site):
-            continue
-
-        # Sometimes the link's URL gets mushed in with the text. It also
-        # should be cleaned of HTML symbols (&lt;, etc.).
-        title = clean.from_html(str(link.text).split('http')[0])
-
-        # Parse date from result. This is much more consistant than
-        # doing it from the articles themselves, but it can be a little
-        # spotty. TODO: Refactor this to catch relative dates.
-        try:
-            date = div.find('span', {'class': 'f'}).text
-            date = str(date).replace(' - ', '')
-            log.info(_('Ok: %s'), url)
-        except AttributeError:
-            date = 'N.D.'
-            log.warning(_('Ok (no date): %s'), url)
-
-        # For Google results we'll have to gin up our own slug.
-        slug = CONFIG['DB_NAME_FORMAT'].format(
-            site=site['slug'],
-            query=clean.slugify(query),
-            slug=clean.slugify(title))
-
-        yield dict(
-            doc_id=str(uuid4()),
-            attachment_id='',
-            namespace=CONFIG['DB_NAMESPACE'],
-            name=slug,
-            DB_METAPATH=CONFIG['DB_METAPATH'].format(site=site['slug']),
-            pub=site['name'],
-            pub_short=site['slug'],
-            title=title,
-            url=url,
-            content='',  # We don't have content yet--we'll get that next.
-            search_term=query)
-
-    log.info(_('Found all results on page.'))
-
-
-def save_search_results(site, webdriver):
-    """
-    """
-
-    log = getLogger(__name__)
-    CONFIG = config.SETTINGS
-    articles = []
-
-    if not CONFIG['GOOGLE_SEARCH_ENABLE']:
-        log.warning(_('Google Search has been disabled.'))
-        return []
-    if site.get('skip', False):
-        log.warning(_('Skipping: %s'), site['name'])
-        return []
-    if not site.get('googleSearchEnable', CONFIG['GOOGLE_SEARCH_ENABLE']):
-        log.warning(_('Google Search disabled: %s'), site['name'])
-        return []
-
-    # Perform a Google Search.
     for query in site.get('queries', CONFIG['QUERIES']):
-        log.info(_('Searching Google for "%s" at: %s'), query, site['site'])
+        log.info(_('Searching Google for "%s" at: %s'), query, site['name'])
 
-        # Start the query.
+        # Loop over each page looking for results.
         google_url = CONFIG['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
-
-        # Loop over the page looking for results, then loop over the results.
         while True:
 
             browser.sleep()
-            soup = browser.get_soup_from_selenium(google_url, webdriver)
+            soup = browser.get_soup_from_selenium(google_url, driver)
 
-            for article in yield_articles_on_page(soup, site, query):
-                articles.append(article)
-                data.save_article_to_json(article)
+            # Loop over each "Result Candidate" in the page.
+            for div in soup.find_all('div', {'class': 'rc'}):
+
+                # The link will be the first anchor in the div.
+                link = div.find('a')
+                url = str(link.get('href')).lower()
+                log.debug(_('Found Google result: %s'), url)
+
+                # Check for URL stopwords.
+                if is_stopword_in_url(url, site):
+                    continue
+                
+                # Sometimes the link's URL gets mushed in with the text. It also
+                # should be cleaned of HTML symbols (&lt;, etc.).
+                title = clean.from_html(str(link.text).split('http')[0])
+
+                # Parse date from result. This is much more consistant than
+                # doing it from the articles themselves, but it can be a little
+                # spotty. TODO: Refactor this to catch relative dates.
+                try:
+                    date = div.find('span', {'class': 'f'}).text
+                    date = str(date).replace(' - ', '')
+                except AttributeError:
+                    date = 'N.D.'
+                    log.warning(_('Ok (no date): %s'), url)
+
+                yield dict(url=url, title=title, date=date)
 
             next_link = soup.find('a', {'id': 'pnnext'})
             if next_link is not None:
@@ -123,82 +100,120 @@ def save_search_results(site, webdriver):
 
             log.info(_('End of results for "%s" at: %s'), query, site['site'])
             break
-
+    
     log.info(_('Google search complete for site: %s'), site['name'])
-    log.debug(_('Disabling Google Search for site: %s'), site['name'])
-    site.update({'googleSearchEnable': False})
-    config.save_settings_to_yaml()
-
-    return articles
 
 
-def save_articles(site, webdriver=None):
+def scrape_site(site, articles, driver, allow_search=True, lock=None):
     """
     """
 
     log = getLogger(__name__)
     CONFIG = config.SETTINGS
 
-    # Get all the articles associated with this site.
-    articles = []
-    for article in data.load_articles_from_json():
-        if article['pub_short'] == site['slug']:
-            articles.append(article)
-    if articles == []:
-        log.warning(_('No URLs found for site: %s'), site['name'])
-        log.info(_('Have you run a Google Search yet?'))
-        return []
+    # We only need the articles related to this site.
+    site_articles = [a for a in articles if a['pub_short'] == site['slug']]
 
-    log.info(_('Scraping %d articles from site: %s'), len(articles), site['name'])
-    for article in articles:
+    # Google Search
+    if allow_search and not site.get('googleSearchEnable', True):
+        log.info(_('Google Search disabled for site: %s'), site['name'])
+    if allow_search and site.get('googleSearchEnable', True):
 
-        # Don't waste time on this site if we've updated the stopwords.
-        if url_has_stopword(article['url'], site):
-            continue
+        # If we're searching, don't collect stuff we already have.
+        skip_urls = [a['url'] for a in site_articles]
 
-        browser.sleep()
-        if not webdriver:
-            soup = browser.get_soup_from_url(article['url'])
-            if not soup:
-                log.warning(_('Could not scrape site with URLLib: %s'), site['name'])
+        # Find results.
+        log.info(_('Starting Google Search for site: %s'), site['name'])
+        for query, query_result in yield_query_results(site, driver):
+
+            if query_result['url'] in skip_urls:
+                log.info(_('Skipping (duplicate): %s'), query_result['url'])
                 continue
-        else:
-            soup = browser.get_soup_from_selenium(article['url'], webdriver)
 
-        # Start by getting rid of JavaScript--Bleach will "neuter" this but
-        # has trouble removing it completely.
-        try:
-            soup.script.extract()
-        except AttributeError:
-            log.debug(_('No <script> tags found.'))
+            # For Google results we'll have to gin up our own slug.
+            slug = CONFIG['DB_NAME_FORMAT'].format(
+                site=site['slug'],
+                query=clean.slugify(query),
+                slug=clean.slugify(query_result['title']))
 
-        # Now focus in on the content. We can't guarantee they've used the
-        # <article> tag, but it's a safe bet they won't put an article in the
-        # <header> or <footer>.
-        try:
-            soup.header.extract()
-            soup.footer.extract()
-        except AttributeError:
-            log.debug(_('No <header>/<footer> tags found.'))
+            if not is_selenium_site(site):
+                soup = browser.get_soup_from_url(query_result['url'])
+            else:
+                soup = browser.get_soup_from_selenium(query_result['url'], driver)
+            content = clean.from_soup(soup, site)
 
-        # Finally, take all the content tags, default <p>, and mush together
-        # any that are over a certain length of characters. This can be very
-        # imprecise, but it seems to work for the most part. If we're getting
-        # particularly bad content for a site, we can tweak the config and
-        # try again or switch to a more advanced web-scraping tool.
-        tag = site.get('googleContentTag', CONFIG['GOOGLE_CONTENT_TAG'])
-        length = site.get('googleContentLengthMin', CONFIG['GOOGLE_CONTENT_LENGTH_MIN'])
-        content = ''
-        for div in soup.find_all(tag):
-            if len(div.text) > length:
-                content += f' {div.text}'
-        content = clean.from_html(content)
+            # Create a new article.
+            article = dict(
+                doc_id=str(uuid4),
+                attachment_id='',
+                namespace=CONFIG['DB_NAMESPACE'],
+                name=slug,
+                pub_date=query_result['date'],
+                metapath=CONFIG['DB_METAPATH'].format(site=site['slug']),
+                pub=site['name'],
+                pub_short=site['slug'],
+                title=query_result['title'],
+                url=query_result['url'],
+                content=content,
+                length=f'{len(content)} words',
+                search_term=query)
+            data.save_article_to_json(article)
+            articles.append(article)
 
-        article['content'] = content
-        data.save_article_to_json(article, allow_overwrite=True)
+    # Google Scrape
+    if not site.get('googleScrapeEnable', True):
+        log.info(_('Google Scrape disabled for site: %s'), site['name'])
+    if site.get('googleScrapeEnable', True):
 
-    log.info(_('Google scrape complete for site: %s'), site['name'])
-    log.debug(_('Setting site to "skip": %s'), site['name'])
-    site.update({'skip': True})
+        # If there's no articles to scrape, let's drop out here.
+        if articles == []:
+            log.warning(_('No articles found for site: %s'), site['name'])
+            return articles
 
+        log.info(_('Starting Google scrape for site: %s'), site['name'])
+        for article in articles:
+
+            if not is_selenium_site(site):
+                soup = browser.get_soup_from_url(article['url'])
+            else:
+                soup = browser.get_soup_from_selenium(article['url'], driver, use_new_tab=True)
+            content = clean.from_soup(soup, site)
+
+            # Update old articles -- don't save new ones.
+            article.update({'content': content, 'length': f'{len(content)} words'})
+            data.save_article_to_json(article, allow_overwrite=True)
+
+    log.info(_('Scrape complete: %s'), site['name'])
+    site['skip'] = True
+    config.save_sites_to_yaml()
+    return articles
+
+
+def scrape(sites, driver, thread_pool=None, lock=None):
+    """
+    """
+
+    log = getLogger(__name__)
+    CONFIG = config.SETTINGS
+    articles = []
+
+    if not CONFIG['GOOGLE_SEARCH_ENABLE']:
+        log.warning(_('Google Search has been disabled.'))
+        return articles
+
+    # Grab what we've done so far.
+    articles = data.load_articles_from_json()
+
+    # Look for stragglers that need cleaning up.
+    for site in sites:
+        articles = scrape_site(site, articles, driver, allow_search=False)
+
+    # Now jump into our search.
+    for site in sites:
+        articles = scrape_site(site, articles, driver)
+
+    # And scrape what we got!
+    for site in sites:
+        articles = scrape_site(site, articles, driver, allow_search=False)
+        
     return articles

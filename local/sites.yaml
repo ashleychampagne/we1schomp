@@ -7,7 +7,6 @@ site: we1s.ucsb.edu
 # OPTIONAL: Query terms to use for this site. Overrides global setting.
 queries:
 - humanities
-- liberal arts
 # OPTIONAL: Enable WordPress scraping for this site.
 wpEnable: true
 # OPTIONAL: Look for WordPress Pages when scraping this site.
@@ -32,23 +31,18 @@ skip: true
 name: Z Magazine
 slug: z-mag
 site: zcomm.org
-wpURL: http://zcomm.org/wp-json/wp/v2/
-skip: true
 ---
 name: World Socialist Website
 slug: wsws
 site: wsws.org
-skip: true
 ---
 name: The Utne Reader
 slug: utne
 site: utne.com
-googleSearchEnable: false
 ---
 name: Truthdig
 slug: truthdig
 site: truthdig.com
-googleSearchEnable: false
 ---
 name: Threepenny Review
 slug: threepenny-review
@@ -61,8 +55,6 @@ site: this.org
 name: ThinkProgress
 slug: thinkprogress
 site: thinkprogress.org
-wpURL: http://thinkprogress.org/wp-json/wp/v2/
-skip: true
 ---
 name: The Root
 slug: root-mag
@@ -95,14 +87,10 @@ site: thebaffler.com
 name: Talking Points Memo
 slug: talking-points-memo
 site: talkingpointsmemo.com
-wpURL: http://talkingpointsmemo.com/wp-json/wp/v2/
-skip: true
 ---
 name: Anarcho-Syndicalist Review
 slug: anarcho-syndicalist-review
 site: syndicalist.us
-wpURL: http://syndicalist.us/wp-json/wp/v2/
-skip: true
 ---
 name: Splinter News
 slug: splinter-news
@@ -119,8 +107,6 @@ site: shareblue.com
 name: Right Wing Watch
 slug: right-wing-watch
 site: rightwingwatch.org
-wpURL: http://rightwingwatch.org/wp-json/wp/v2/
-wpEnable: false
 ---
 name: Revolution
 slug: revolution
@@ -129,141 +115,3 @@ site: revcom.us/revolution
 name: American Prospect
 slug: american-prospect
 site: prospect.org
----
-name: The Progressive
-slug: progressive
-site: progressive.org
----
-name: Popular Resistance
-slug: popular-resistance
-site: popularresistance.org
-wpURL: http://popularresistance.org/wp-json/wp/v2/
-skip: true
----
-name: The People's World
-slug: peoples-world
-site: peoplesworld.org
-wpURL: http://peoplesworld.org/wp-json/wp/v2/
-wpEnable: false
----
-name: n+1
-slug: n-plus-one
-site: nplusonemag.com
----
-name: NowThis
-slug: nowthis
-site: nowthisnews.com
----
-name: The New Republic
-slug: new-republic
-site: newrepublic.com
----
-name: New Left Review
-slug: new-left-review
-site: newleftreview.org
----
-name: MoveOn.org
-slug: moveon
-site: moveon.org
----
-name: Mother Jones
-slug: mother-jones
-site: motherjones.com
-wpURL: http://motherjones.com/wp-json/wp/v2/
-skip: true
----
-name: The Monthly Review
-slug: monthly-review
-site: monthlyreview.org
----
-name: Marxism-Leninism Today
-slug: marxism-leninism-today
-site: mltoday.com
-wpURL: http://mltoday.com/wp-json/wp/v2/
-skip: true
----
-name: LibCom.org
-slug: libcom
-site: libcom.org
----
-name: Left Turn
-slug: left-turn
-site: leftturn.org
----
-name: Labor Notes
-slug: labor-notes
-site: labornotes.org
----
-name: Jewish Currents
-slug: jewish-currents
-site: jewishcurrents.org
----
-name: Jacobin
-slug: jacobin
-site: jacobinmag.com
----
-name: It's Going Down
-slug: its-going-down
-site: itsgoingdown.org
----
-name: In These Times
-slug: in-these-times
-site: inthesetimes.com
----
-name: Indymedia
-slug: indymedia
-site: indymedia.org
----
-name: Index on Censorship
-slug: index-on-censorship
-site: indexoncensorship.org
----
-name: Green Left Weekly
-slug: green-left-weekly
-site: greenleft.org.au
----
-name: The Fifth Estate
-slug: fifth-estate
-site: fifthestate.org
----
-name: Democratic Left
-slug: democratic-left
-site: dsausa.org/democratic_left
----
-name: Dollars and Sense
-slug: dollars-and-sense
-site: dollarsandsense.org
----
-name: Dissent
-slug: dissent
-site: dissentmagazine.org
-wpURL: http://dissentmagazine.org/wp-json/wp/v2/
-wpEnable: false
----
-name: Democracy Now!
-slug: democracy-now
-site: democracynow.org
----
-name: DailyKos
-slug: dailykos
-site: dailykos.com
----
-name: Current Affairs
-slug: current-affairs
-site: currentaffairs.org
----
-name: CounterPunch
-slug: counterpunch
-site: counterpunch.org
----
-name: Common Dreams
-slug: common-dreams
-site: commondreams.org
----
-name: Boston Review
-slug: boston-review
-site: bostonreview.net
----
-name: 50 States of Blue
-slug: fifty-states-of-blue
-site: 50statesofblue.com

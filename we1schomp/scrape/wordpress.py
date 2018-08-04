@@ -2,14 +2,17 @@
 """ Scraping tools for the WordPress API.
 """
 
+from functools import partial
 from gettext import gettext as _
 from logging import getLogger
+from multiprocessing.dummy import Lock
+from multiprocessing.dummy import Pool as ThreadPool
 from uuid import uuid4
 
 from we1schomp import browser, clean, config, data
 
 
-def check_for_api(site):
+def is_wordpress_site(site):
     """ Check for a WordPress API.
 
     Returns:
@@ -19,14 +22,11 @@ def check_for_api(site):
     log = getLogger(__name__)
     CONFIG = config.SETTINGS
 
-    if not CONFIG['WORDPRESS_ENABLE'] or site.get('skip', False):
-        log.warning(_('Skipping: %s'), site['name'])
-        return False
-    if not site.get('wpEnable', CONFIG['WORDPRESS_ENABLE']):
-        log.warning(_('WordPress disabled: %s'), site['name'])
+    if not (site.get('wpEnable', True) and CONFIG['WORDPRESS_ENABLE']):
+        log.warning(_('Skipping site (disabled): %s'), site['name'])
         return False
 
-    log.info(_('Testing WordPress API for site: %s'), site['name'])
+    log.debug(_('Testing WordPress API for site: %s'), site['name'])
     wp_url = f"http://{site['site'].strip('/')}{CONFIG['WORDPRESS_API_URL']}"
 
     # Do we already have a WordPress API URL?
@@ -65,6 +65,9 @@ def yield_query_results(site):
 
     for query in site.get('queries', CONFIG['QUERIES']):
 
+        if not is_wordpress_site(site):
+            continue
+
         # Query pages, if enabled.
         if not pages_ok:
             log.warning(_('Skipping pages (disabled): %s'), site['name'])
@@ -90,19 +93,22 @@ def yield_query_results(site):
                 yield query, response
 
 
-def save_articles(site):
-    """ Look for articles at a site using the WordPress API.
-
-    Returns:
-        list: [] if no results found.
+def scrape_site(site, collected_urls, lock=None):
+    """
     """
 
     log = getLogger(__name__)
     CONFIG = config.SETTINGS
     articles = []
 
-    if not check_for_api(site):
+    if not is_wordpress_site(site):
         return articles
+    else:
+        if lock is not None:
+            lock.acquire()
+        config.save_sites_to_yaml()
+        if lock is not None:
+            lock.release()
 
     # Perform the API query.
     log.info(_('Starting WordPress scrape for site: %s'), site['name'])
@@ -117,6 +123,7 @@ def save_articles(site):
             attachment_id='',
             namespace=CONFIG['DB_NAMESPACE'],
             name=slug,
+            pub_date=query_result['date'],
             metapath=CONFIG['DB_METAPATH'].format(site=site['slug']),
             pub=site['name'],
             pub_short=site['slug'],
@@ -124,16 +131,53 @@ def save_articles(site):
             url=query_result['link'],
             content=clean.from_html(query_result['content']['rendered']),
             search_term=query)
+
+        if lock is not None:
+            lock.acquire()
         data.save_article_to_json(article)
         articles.append(article)
-
-    # Pass this site on to Google if we're not getting WordPress results.
+        if lock is not None:
+            lock.release()
+        
+    log.info(_('Scrape complete: %s'), site['name'])
     if articles == []:
         log.info(_('No WordPress API results for site: %s'), site['name'])
         site['wpEnable'] = False
+    else:
+        log.debug(_('Setting site to "skip": %s'), site['name'])
+        site['skip'] = True
+    
+    if lock is not None:
+        lock.acquire()
+    config.save_sites_to_yaml()
+    if lock is not None:
+        lock.release()
+
+    return articles
+
+
+def scrape(sites):
+    """ Look for articles at a site using the WordPress API.
+    """
+
+    log = getLogger(__name__)
+    CONFIG = config.SETTINGS
+    articles = []
+
+    if not CONFIG['WORDPRESS_ENABLE']:
+        log.warning(_('WordPress has been disabled.'))
         return articles
 
-    log.info(_('Scrape complete: %s'), site['name'])
-    log.debug(_('Setting site to "skip": %s'), site['name'])
-    site['skip'] = True
+    # Don't re-collect the same URLs.
+    collected_urls = [a['url'] for a in data.load_articles_from_json()]
+
+    # Open a new thread pool.
+    thread_pool = ThreadPool(CONFIG['THREAD_POOL_SIZE'])
+    lock = Lock()
+
+    collection_task = partial(scrape_site, collected_urls=collected_urls, lock=lock)
+    articles = thread_pool.map(collection_task, sites)
+    thread_pool.close()
+    thread_pool.join()
+
     return articles

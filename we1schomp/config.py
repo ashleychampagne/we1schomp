@@ -63,7 +63,7 @@ def save_config_to_yaml():
     return True
 
 
-def save_settings_to_yaml():
+def save_sites_to_yaml():
     """ Saves the sites file to YAML.
 
     Returns:

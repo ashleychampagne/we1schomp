@@ -1,13 +1,12 @@
 QUERIES:
 - humanities
-- liberal arts
-WORDPRESS_ENABLE: false
+WORDPRESS_ENABLE: true
 WORDPRESS_GET_PAGES: true
 WORDPRESS_GET_POSTS: true
 WORDPRESS_API_URL: /wp-json/wp/v2/
 WORDPRESS_PAGES_QUERY_URL: '{api_url}pages?search={query}&sentence=1'
 WORDPRESS_POSTS_QUERY_URL: '{api_url}posts?search={query}&sentence=1'
-GOOGLE_SEARCH_ENABLE: false
+GOOGLE_SEARCH_ENABLE: true
 GOOGLE_SCRAPE_ENABLE: true
 GOOGLE_QUERY_URL: http://google.com/search?q="{query}"+site%3A{site}&safe=off&filter=0
 GOOGLE_CONTENT_TAG: p
@@ -50,3 +49,4 @@ WEBDRIVER_URL: http://harbor.english.ucsb.edu:4444/wd/hub
 WEBDRIVER_SLEEP_MIN: 0.5
 WEBDRIVER_SLEEP_MAX: 5.0
 THREAD_POOL_SIZE: 8
+ENABLE_WORDPRESS: false

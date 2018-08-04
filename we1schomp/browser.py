@@ -12,6 +12,7 @@ from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 from we1schomp import config
 
@@ -93,7 +94,7 @@ def get_soup_from_url(url):
         return None
 
 
-def get_soup_from_selenium(url, driver):
+def get_soup_from_selenium(url, driver, use_new_tab=False):
     """Get BeautifulSoup data from a URL using webdriver.get().
 
     Not thread-safe, but more versatile than get_soup_from_url().
@@ -103,6 +104,11 @@ def get_soup_from_selenium(url, driver):
     log = getLogger(__name__)
 
     log.info(_('Selenium: %s'), url)
+
+    if use_new_tab:
+        driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 't')
+        sleep(short=True)
+
     driver.get(url)
 
     # Check for a CAPTCHA.
@@ -113,9 +119,13 @@ def get_soup_from_selenium(url, driver):
         while '/sorry/' in driver.current_url:
             sleep(short=True)
 
-        log.info(_('Ok!'))
+        log.info(_('CAPTCHA cleared.'))
         sleep()
 
     soup = BeautifulSoup(driver.page_source, 'html5lib')
     log.debug(_('Soup: %s'), soup)
+
+    if use_new_tab:
+        driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL, 'w')
+
     return soup
