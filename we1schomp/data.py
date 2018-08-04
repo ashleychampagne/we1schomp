@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Data management functions.
+
+WE1S Chomp <http://github.com/seangilleran/we1schomp>
+A WhatEvery1Says project <http://we1s.ucsb.edu>
 """
 
 import json
@@ -9,7 +12,7 @@ import time
 from gettext import gettext as _
 from logging import getLogger
 
-from we1schomp import config, clean
+from we1schomp import clean, settings
 
 
 def find_json_files_in_path(path):
@@ -46,15 +49,15 @@ def load_articles_from_json(skip_complete_files=True):
 
     Args:
         skip_complete_files (bool): By default, this function will skip
-        articles that already have content. Override this by setting to False.
+            articles that already have content. Set False to override.
 
     Returns:
-        (list of dict): Article data.
+        list of dict: Article data.
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
-    path = CONFIG['FILE_OUTPUT_PATH']
+    config = settings.CONFIG
+    path = config['FILE_OUTPUT_PATH']
     articles = []
     count = 0
     skipped = 0
@@ -77,12 +80,14 @@ def load_articles_from_json(skip_complete_files=True):
     return articles
 
 
-def save_article_to_json(article, allow_overwrite=False):
-    """ Save an article to JSON according to the WE1Sv2.0 schema.
+def save_article_to_json(article, update_files=False):
+    """ Save an article to JSON.
+
+    Uses the WE1Sv2.0 schema.
 
     Args:
-        article (dict): Article data to save to JSON.
-        allow_overwrite (bool): Set to True to update old files. Since this
+        article (dict): Article data.
+        update_files (bool): Set to True to update old files. Since this
             requires rooting around in the path, it might come with a big
             performance cost in a production directory.
 
@@ -91,12 +96,12 @@ def save_article_to_json(article, allow_overwrite=False):
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
-    path = CONFIG['FILE_OUTPUT_PATH']
+    config = settings.CONFIG
+    path = config['FILE_OUTPUT_PATH']
     filename = ''
 
     # Update existing files first.
-    if allow_overwrite:
+    if update_files:
         for json_data, json_file in find_json_files_in_path(path):
             if json_data['doc_id'] == article['doc_id']:
                 filename = json_file
@@ -104,9 +109,9 @@ def save_article_to_json(article, allow_overwrite=False):
                 break
 
     # Otherwise make a new file.
-    if not allow_overwrite or filename == '':
+    if not update_files or filename == '':
 
-        filename = CONFIG['FILENAME_FORMAT']
+        filename = config['FILENAME_FORMAT']
 
         now = time.localtime()
         timestamp = f'{now.tm_year}{now.tm_mon:02d}{now.tm_mday:02d}'

@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """ Functions to clean string data for later processing.
+
+Most cleaning should be done in Jupyter notebooks. This should bring us only as
+far as dealing with Unicode issues and removing extraneous HTML.
+
+WE1S Chomp <http://github.com/seangilleran/we1schomp>
+A WhatEvery1Says project <http://we1s.ucsb.edu>
 """
 
 import html
@@ -11,14 +17,16 @@ import bleach
 import regex as re
 from unidecode import unidecode
 
-from we1schomp import config
+from we1schomp import settings
 
 
 def from_html(dirty):
     """ Removes problematic characters from a string.
+
+    This is a first step just to get from web data to something more workable.
     """
 
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
     # Start by Bleaching out the HTML.
     dirty = bleach.clean(dirty, tags=[], strip=True)
@@ -32,8 +40,8 @@ def from_html(dirty):
     dirty = unidecode(dirty)
 
     # Regex processing. Experimental!
-    if CONFIG['REGEX_ENABLE']:
-        dirty = re.sub(re.compile(CONFIG['REGEX_STRING']), ' ', dirty)
+    if config['REGEX_ENABLE']:
+        dirty = re.sub(re.compile(config['REGEX_STRING']), ' ', dirty)
 
     # Squeeze out the whitespace.
     dirty = ''.join(c for c in dirty if c in string.printable)
@@ -44,11 +52,11 @@ def from_html(dirty):
 
 
 def from_soup(soup, site):
-    """
+    """ Processes output from BeautifulSoup into a clean string.
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
     # Start by getting rid of JavaScript--Bleach will "neuter" this but
     # has trouble removing it completely.
@@ -71,8 +79,8 @@ def from_soup(soup, site):
     # imprecise, but it seems to work for the most part. If we're getting
     # particularly bad content for a site, we can tweak the config and
     # try again or switch to a more advanced web-scraping tool.
-    tag = site.get('googleContentTag', CONFIG['GOOGLE_CONTENT_TAG'])
-    length = site.get('googleContentLengthMin', CONFIG['GOOGLE_CONTENT_LENGTH_MIN'])
+    tag = site.get('googleContentTag', config['GOOGLE_CONTENT_TAG'])
+    length = site.get('googleContentLengthMin', config['GOOGLE_CONTENT_LENGTH_MIN'])
     content = ''
     for div in soup.find_all(tag):
         if len(div.text) > length:

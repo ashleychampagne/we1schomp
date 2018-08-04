@@ -17,7 +17,7 @@ def main():
     
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
     sites = config.SITES
     articles = []
 
@@ -26,7 +26,7 @@ def main():
 
     # WordPress Scrape
     articles = wordpress.scrape(sites)
-    CONFIG['ENABLE_WORDPRESS'] = False
+    config['ENABLE_WORDPRESS'] = False
     config.save_config_to_yaml()
 
     ## Google Scrape

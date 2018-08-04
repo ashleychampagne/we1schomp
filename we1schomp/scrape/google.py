@@ -2,12 +2,11 @@
 """ Scraping tools for Google.
 """
 
-from functools import partial
 from gettext import gettext as _
 from logging import getLogger
 from uuid import uuid4
 
-from we1schomp import browser, clean, config, data
+from we1schomp import browser, clean, data, settings
 
 
 def is_selenium_site(site):
@@ -36,9 +35,9 @@ def is_stopword_in_url(url, site):
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
-    stopwords = site.get('googleURLStopwords', CONFIG['GOOGLE_URL_STOPWORDS'])
+    stopwords = site.get('googleURLStopwords', config['GOOGLE_URL_STOPWORDS'])
     for stop in stopwords:
         if stop in url:
             log.warning(_('Skipping (has "%s"): %s'), stop, url)
@@ -51,13 +50,13 @@ def yield_query_results(site, driver):
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
-    for query in site.get('queries', CONFIG['QUERIES']):
+    for query in site.get('queries', config['QUERIES']):
         log.info(_('Searching Google for "%s" at: %s'), query, site['name'])
 
         # Loop over each page looking for results.
-        google_url = CONFIG['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
+        google_url = config['GOOGLE_QUERY_URL'].format(site=site['site'], query=query)
         while True:
 
             browser.sleep()
@@ -74,7 +73,7 @@ def yield_query_results(site, driver):
                 # Check for URL stopwords.
                 if is_stopword_in_url(url, site):
                     continue
-                
+
                 # Sometimes the link's URL gets mushed in with the text. It also
                 # should be cleaned of HTML symbols (&lt;, etc.).
                 title = clean.from_html(str(link.text).split('http')[0])
@@ -100,16 +99,16 @@ def yield_query_results(site, driver):
 
             log.info(_('End of results for "%s" at: %s'), query, site['site'])
             break
-    
+
     log.info(_('Google search complete for site: %s'), site['name'])
 
 
-def scrape_site(site, articles, driver, allow_search=True, lock=None):
+def scrape_site(site, articles, driver, allow_search=True):
     """
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
     # We only need the articles related to this site.
     site_articles = [a for a in articles if a['pub_short'] == site['slug']]
@@ -131,7 +130,7 @@ def scrape_site(site, articles, driver, allow_search=True, lock=None):
                 continue
 
             # For Google results we'll have to gin up our own slug.
-            slug = CONFIG['DB_NAME_FORMAT'].format(
+            slug = config['DB_NAME_FORMAT'].format(
                 site=site['slug'],
                 query=clean.slugify(query),
                 slug=clean.slugify(query_result['title']))
@@ -146,10 +145,10 @@ def scrape_site(site, articles, driver, allow_search=True, lock=None):
             article = dict(
                 doc_id=str(uuid4),
                 attachment_id='',
-                namespace=CONFIG['DB_NAMESPACE'],
+                namespace=config['DB_NAMESPACE'],
                 name=slug,
                 pub_date=query_result['date'],
-                metapath=CONFIG['DB_METAPATH'].format(site=site['slug']),
+                metapath=config['DB_METAPATH'].format(site=site['slug']),
                 pub=site['name'],
                 pub_short=site['slug'],
                 title=query_result['title'],
@@ -157,8 +156,11 @@ def scrape_site(site, articles, driver, allow_search=True, lock=None):
                 content=content,
                 length=f'{len(content)} words',
                 search_term=query)
+
+            # Save the results.
             data.save_article_to_json(article)
             articles.append(article)
+            skip_urls.append(query_result['url'])
 
     # Google Scrape
     if not site.get('googleScrapeEnable', True):
@@ -181,7 +183,7 @@ def scrape_site(site, articles, driver, allow_search=True, lock=None):
 
             # Update old articles -- don't save new ones.
             article.update({'content': content, 'length': f'{len(content)} words'})
-            data.save_article_to_json(article, allow_overwrite=True)
+            data.save_article_to_json(article, update_files=True)
 
     log.info(_('Scrape complete: %s'), site['name'])
     site['skip'] = True
@@ -189,15 +191,15 @@ def scrape_site(site, articles, driver, allow_search=True, lock=None):
     return articles
 
 
-def scrape(sites, driver, thread_pool=None, lock=None):
+def scrape(sites, driver):
     """
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
     articles = []
 
-    if not CONFIG['GOOGLE_SEARCH_ENABLE']:
+    if not config['GOOGLE_SEARCH_ENABLE']:
         log.warning(_('Google Search has been disabled.'))
         return articles
 
@@ -215,5 +217,5 @@ def scrape(sites, driver, thread_pool=None, lock=None):
     # And scrape what we got!
     for site in sites:
         articles = scrape_site(site, articles, driver, allow_search=False)
-        
+
     return articles

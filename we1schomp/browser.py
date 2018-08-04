@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Common browser/web tools.
+
+WE1S Chomp <http://github.com/seangilleran/we1schomp>
+A WhatEvery1Says project <http://we1s.ucsb.edu>
 """
 
 import json
@@ -14,7 +17,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
-from we1schomp import config
+from we1schomp import settings
 
 
 def get_webdriver(grid_url):
@@ -33,15 +36,16 @@ def sleep(short=False, seconds=0.0):
 
     Args:
         short (boolean): Set to True to always pick the min sleep time.
-        seconds (float): Sleep for a specific number of seconds.
+        seconds (float): Sleep for a specific number of seconds. Overrides
+            other settings.
     """
 
     log = getLogger(__name__)
-    CONFIG = config.SETTINGS
+    config = settings.CONFIG
 
     if seconds == 0.0:
-        seconds_min = CONFIG['WEBDRIVER_SLEEP_MIN']
-        seconds_max = CONFIG['WEBDRIVER_SLEEP_MAX']
+        seconds_min = config['WEBDRIVER_SLEEP_MIN']
+        seconds_max = config['WEBDRIVER_SLEEP_MAX']
 
         if not short:
             seconds = random.uniform(seconds_min, seconds_max)
@@ -53,7 +57,7 @@ def sleep(short=False, seconds=0.0):
 
 
 def get_json_from_url(url):
-    """ Return JSON data from a URL.
+    """ Return JSON data from a URL, None if load failed.
     """
 
     log = getLogger(__name__)
@@ -62,20 +66,20 @@ def get_json_from_url(url):
     try:
         with urlopen(url) as response:
             return json.loads(response.read())
+
     except (error.HTTPError, error.URLError) as ex:
         log.debug(_('URLLib Error: %s'), ex)
         log.debug(_('No data collected.'))
     except json.decoder.JSONDecodeError as ex:
         log.warning(_('JSON Error: %s'), ex)
         log.warning(_('No data collected.'))
-
     return None
 
 
 def get_soup_from_url(url):
     """ Get BeautifulSoup data from a URL using URLLib.urlopen().
 
-    Thread-safe, but blocked by some sites.
+    Fast, but blocked by some sites.
     """
 
     log = getLogger(__name__)
@@ -97,8 +101,7 @@ def get_soup_from_url(url):
 def get_soup_from_selenium(url, driver, use_new_tab=False):
     """Get BeautifulSoup data from a URL using webdriver.get().
 
-    Not thread-safe, but more versatile than get_soup_from_url().
-    Also required if there is a potential for CAPTCHAs.
+    Slow, but more versatile than get_soup_from_url().
     """
 
     log = getLogger(__name__)
