@@ -2,11 +2,10 @@
 """ Scraping tools for the WordPress API.
 """
 
+import multiprocessing
 from functools import partial
 from gettext import gettext as _
 from logging import getLogger
-from multiprocessing.dummy import Lock
-from multiprocessing.dummy import Pool as ThreadPool
 from uuid import uuid4
 
 from we1schomp import browser, clean, data, settings
@@ -38,10 +37,10 @@ def is_wordpress_site(site):
     response = browser.get_json_from_url(wp_url)
 
     if not response:
-        log.warning(_('No API or bad response: %s'), site['name'])
+        log.debug(_('No API or bad response: %s'), site['name'])
         return False
     if response['namespace'] != 'wp/v2':
-        log.warning(_('Wrong API version or bad response: %s'), site['name'])
+        log.debug(_('Wrong API version or bad response: %s'), site['name'])
         return False
 
     # Store it so we don't have to do this query again.
@@ -93,24 +92,26 @@ def yield_query_results(site):
                 yield query, response
 
 
-def scrape_site(site, collected_urls, lock):
+def scrape_site(site, collected_urls):
     """ Scrape all articles for all terms from a specified site.
     """
 
     log = getLogger(__name__)
     config = settings.CONFIG
     articles = []
+    lock = multiprocessing.Lock()
+    thread_name = multiprocessing.current_process()
 
     if not is_wordpress_site(site):
         return articles
 
     # Perform the API query.
-    log.info(_('Starting WordPress scrape for site: %s'), site['name'])
+    log.debug(_('[%s]Starting WordPress scrape for site: %s'), thread_name, site['name'])
     for query, query_result in yield_query_results(site):
 
         # Don't collect stuff we already have.
         if query_result['link'] in collected_urls:
-            log.info(_('Skipping (duplicate): %s'), query_result['url'])
+            log.info(_('[%s]Skipping (duplicate): %s'), thread_name, query_result['link'])
             continue
 
         # WordPress helpfully provides a slug we can use for our article.
@@ -131,27 +132,22 @@ def scrape_site(site, collected_urls, lock):
             content=clean.from_html(query_result['content']['rendered']),
             search_term=query)
 
-        if lock is not None:
-            lock.acquire()
+        lock.acquire()
         data.save_article_to_json(article)
         articles.append(article)
         collected_urls.append(query_result['link'])
-        if lock is not None:
-            lock.release()
+        lock.release()
 
-    log.info(_('Scrape complete: %s'), site['name'])
+    lock.acquire()
+    log.info(_('[%s]Scrape complete: %s'), thread_name, site['name'])
     if articles == []:
-        log.info(_('No WordPress API results for site: %s'), site['name'])
+        log.info(_('[%s]No WordPress API results for site: %s'), thread_name, site['name'])
         site['wpEnable'] = False
     else:
-        log.debug(_('Setting site to "skip": %s'), site['name'])
+        log.debug(_('[%s]Setting site to "skip": %s'), thread_name, site['name'])
         site['skip'] = True
-
-    if lock is not None:
-        lock.acquire()
     settings.save_to_yaml()
-    if lock is not None:
-        lock.release()
+    lock.release()
 
     return articles
 
@@ -172,11 +168,10 @@ def scrape(sites):
     collected_urls = [a['url'] for a in data.load_articles_from_json()]
 
     # Open a new thread pool.
-    thread_pool = ThreadPool(config['THREAD_POOL_SIZE'])
-    lock = Lock()
+    thread_pool = multiprocessing.Pool(config['THREAD_POOL_SIZE'])
 
     # Queue up collection.
-    collection_task = partial(scrape_site, collected_urls=collected_urls, lock=lock)
+    collection_task = partial(scrape_site, collected_urls=collected_urls)
     articles = thread_pool.map(collection_task, sites)
 
     # Get the pool running.

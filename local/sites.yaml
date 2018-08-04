@@ -28,90 +28,314 @@ googleURLStopwords:
 # OPTIONAL: Skip this site completely.
 skip: true
 ---
-name: Z Magazine
-slug: z-mag
-site: zcomm.org
----
-name: World Socialist Website
-slug: wsws
-site: wsws.org
----
-name: The Utne Reader
-slug: utne
-site: utne.com
----
-name: Truthdig
-slug: truthdig
-site: truthdig.com
----
-name: Threepenny Review
-slug: threepenny-review
-site: threepennyreview.com
----
-name: This Magazine
-slug: this
-site: this.org
----
-name: ThinkProgress
-slug: thinkprogress
-site: thinkprogress.org
----
-name: The Root
-slug: root-mag
-site: theroot.com
----
-name: The Real News
-slug: real-news
-site: therealnews.com
----
-name: The Outline
-slug: outline
-site: theoutline.com
----
-name: The Nation
-slug: nation
-site: thenation.com
----
-name: The Intercept
-slug: intercept
-site: theintercept.com
----
-name: The Daily Beast
-slug: daily-beast
-site: thedailybeast.com
+name: Anarcho-Syndicalist Review
+slug: anarcho-syndicalist-review
+site: syndicalist.us
 ---
 name: The Baffler
 slug: baffler
 site: thebaffler.com
 ---
-name: Talking Points Memo
-slug: talking-points-memo
-site: talkingpointsmemo.com
+name: Boston Review
+slug: boston-review
+site: bostonreview.net
 ---
-name: Anarcho-Syndicalist Review
-slug: anarcho-syndicalist-review
-site: syndicalist.us
+name: Common Dreams
+slug: common-dreams
+site: commondreams.org
 ---
-name: Splinter News
-slug: splinter-news
-site: splinternews.com
+name: CounterPunch
+slug: counterpunch
+site: counterpunch.org
 ---
-name: Sojourner
-slug: sojourner
-site: sojo.net
+name: Current Affairs
+slug: current-affairs
+site: currentaffairs.org
 ---
-name: Shareblue Media
-slug: shareblue-media
-site: shareblue.com
+name: DailyKos
+slug: dailykos
+site: dailykos.com
 ---
-name: Right Wing Watch
-slug: right-wing-watch
-site: rightwingwatch.org
+name: Democracy Now!
+slug: democracy-now
+site: democracynow.org
+---
+name: Dissent
+slug: dissent
+site: dissentmagazine.org
+---
+name: Dollars and Sense
+slug: dollars-and-sense
+site: dollarsandsense.org
+---
+name: Green Left Weekly
+slug: green-left-weekly
+site: greenleft.org.au
+---
+name: Index on Censorship
+slug: index-on-censorship
+site: indexoncensorship.org
+---
+name: Indymedia
+slug: indymedia
+site: indymedia.org
+---
+name: The Intercept
+slug: intercept
+site: theintercept.com
+---
+name: It's Going Down
+slug: its-going-down
+site: itsgoingdown.org
+---
+name: Jacobin
+slug: jacobin
+site: jacobinmag.com
+---
+name: Jewish Currents
+slug: jewish-currents
+site: jewishcurrents.org
+---
+name: Left Turn
+slug: left-turn
+site: leftturn.org
+---
+name: LibCom
+slug: libcom
+site: libcom.org
+---
+name: Marxism-Leninsm Today
+slug: marxism-leninsm-today
+site: mltoday.com
+---
+name: MoveOn
+slug: moveon
+site: moveon.org
+---
+name: n+1
+slug: n-plus-one
+site: nplusonemag.com
+---
+name: The Nation
+slug: nation
+site: thenation.com
+---
+name: New Left Review
+slug: new-left-review
+site: newleftreview.org
+---
+name: NowThis
+slug: nowthis
+site: nowthisnews.com
+---
+name: The Outline
+slug: outline
+site: theoutline.com
+---
+name: People's World
+slug: peoples-world
+site: peoplesworld.org
+---
+name: Popular Resistance
+slug: popular-resistance
+site: popularresistance.org
+---
+name: Real News
+slug: real-news
+site: therealnews.com
 ---
 name: Revolution
 slug: revolution
 site: revcom.us/revolution
 ---
-name: American Prospect
-slug: american-prospect
-site: prospect.org
+name: Right Wing Watch
+slug: right-wing-watch
+site: rightwingwatch.org
+---
+name: The Root
+slug: root
+site: theroot.com
+---
+name: Shareblue Media
+slug: shareblue-media
+site: shareblue.com
+---
+name: Sojourners
+slug: sojourners
+site: sojo.net
+---
+name: Splinter
+slug: splinter
+site: splinternews.com
+---
+name: Talking Points Memo
+slug: talking-points-memo
+site: talkingpointsmemo.com
+---
+name: ThinkProgress
+slug: thinkprogress
+site: thinkprogress.org
+---
+name: This Magazine
+slug: this-magazine
+site: this.org
+---
+name: Threepenny Review
+slug: threepenny-review
+site: threepennyreview.com
+---
+name: Truthdig
+slug: truthdig
+site: truthdig.com
+---
+name: The Utne Reader
+slug: utne-reader
+site: utne.com
+---
+name: World Socialist Website
+slug: world-socialist-website
+site: wsws.org
+---
+name: Z Magazine
+slug: z-magazine
+site: zcomm.org
+---
+name: American Renaissance
+slug: american-renaissance
+site: amren.com
+---
+name: American Thinker
+slug: american-thinker
+site: americanthinker.com
+---
+name: The Blaze
+slug: blaze
+site: theblaze.com
+---
+name: Breitbart
+slug: breitbart
+site: breitbart.com
+---
+name: Citizen Magazine
+slug: citizen-magazine
+site: focusonthefamily.com/socialissues/citizen-magazine
+---
+name: CNSNews
+slug: cnsnews
+site: cnsnews.com
+---
+name: Commentary Magazine
+slug: commentary-magazine
+site: commentarymagazine.com
+---
+name: Conservative Treehouse
+slug: conservative-treehouse
+site: theconservativetreehouse.com
+---
+name: Counter-Currents
+slug: counter-currents
+site: counter-currents.com
+---
+name: The Daily Caller
+slug: daily-caller
+site: dailycaller.com
+---
+name: The Daily Stormer
+slug: daily-stormer
+site: dailystormer.name
+---
+name: The Daily Wire
+slug: daily-wire
+site: dailywire.com
+---
+name: The Federalist
+slug: federalist
+site: thefederalist.com
+---
+name: FrontPage Magazine
+slug: frontpage-magazine
+site: frontpagemag.com
+---
+name: The Gateway Pundit
+slug: gateway-pundit
+site: thegatewaypundit.com
+---
+name: Independent Journal Review
+slug: independent-journal-review
+site: ijr.com
+---
+name: Infowars
+slug: infowars
+site: infowars.com
+---
+name: Jewish World Review
+slug: jewish-world-review
+site: jewishworldreview.com
+---
+name: LibertyNation
+slug: libertynation
+site: libertynation.com
+---
+name: Newsmax
+slug: newsmax
+site: newsmax.com
+---
+name: Oath Keepers
+slug: oath-keepers
+site: oathkeepers.org
+---
+name: Occidental Dissent
+slug: occidental-dissent
+site: occidentaldissent.com
+---
+name: The Occidental Observer
+slug: occidental-observer
+site: theoccidentalobserver.net
+---
+name: The Occidental Quarterly
+slug: occidental-quarterly
+site: toqonline.com
+---
+name: PeakProsperity.com
+slug: peakprosperity
+site: peakprosperity.com
+---
+name: PraegerU
+slug: praegeru
+site: prageru.com
+---
+name: PrisonPlanet
+slug: prisonplanet
+site: prisonplanet.com
+---
+name: Reason Magazine
+slug: reason-magazine
+site: reason.com
+---
+name: The Rebel Media
+slug: rebel-media
+site: therebel.media
+---
+name: RedState
+slug: redstate
+site: redstate.com
+---
+name: Social Contract Press
+slug: social-contract-press
+site: thesocialcontract.com
+---
+name: TownHall
+slug: townhall
+site: townhall.com
+---
+name: VDARE
+slug: vdare
+site: vdare.com
+---
+name: The Washington Free Beacon
+slug: washington-free-beacon
+site: freebeacon.com
+---
+name: Zerohedge
+slug: zerohedge
+site: zerohedge.com

@@ -62,17 +62,17 @@ def load_articles_from_json(skip_complete_files=True):
     count = 0
     skipped = 0
 
-    log.debug(_('Searching for articles: %s'), path)
+    log.debug(_('Searching for article files: %s'), path)
     for json_data, filename in find_json_files_in_path(path):
 
         # If a file already has content in it, that implies it's already been
         # scraped. Skip it unless we're told not to.
         if skip_complete_files and json_data['content'] != '':
-            log.debug(_('Skipping: %s'), filename)
+            log.debug(_('Skipping (has content): %s'), filename)
             skipped += 1
             continue
 
-        log.debug(_('Ok: %s'), filename)
+        log.debug(_('File loaded: %s'), filename)
         count += 1
         articles.append(json_data)
 

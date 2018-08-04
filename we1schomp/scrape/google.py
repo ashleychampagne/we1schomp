@@ -10,7 +10,7 @@ from we1schomp import browser, clean, data, settings
 
 
 def is_selenium_site(site):
-    """
+    """ Pings the site to see if we can get away with URLLib collection.
     """
 
     log = getLogger(__name__)
@@ -46,7 +46,7 @@ def is_stopword_in_url(url, site):
 
 
 def yield_query_results(site, driver):
-    """
+    """ Get all the search results for a site.
     """
 
     log = getLogger(__name__)
@@ -187,7 +187,7 @@ def scrape_site(site, articles, driver, allow_search=True):
 
     log.info(_('Scrape complete: %s'), site['name'])
     site['skip'] = True
-    config.save_sites_to_yaml()
+    settings.save_to_yaml()
     return articles
 
 

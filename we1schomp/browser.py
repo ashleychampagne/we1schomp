@@ -68,11 +68,9 @@ def get_json_from_url(url):
             return json.loads(response.read())
 
     except (error.HTTPError, error.URLError) as ex:
-        log.debug(_('URLLib Error: %s'), ex)
-        log.debug(_('No data collected.'))
+        log.debug(_('URLLib Error, no data collected.: %s'), ex)
     except json.decoder.JSONDecodeError as ex:
-        log.warning(_('JSON Error: %s'), ex)
-        log.warning(_('No data collected.'))
+        log.warning(_('JSON Error, no data collected: %s'), ex)
     return None
 
 
@@ -126,7 +124,6 @@ def get_soup_from_selenium(url, driver, use_new_tab=False):
         sleep()
 
     soup = BeautifulSoup(driver.page_source, 'html5lib')
-    log.debug(_('Soup: %s'), soup)
 
     if use_new_tab:
         driver.find_element_by_tag_name('body').send_keys(Keys.CONTROL, 'w')

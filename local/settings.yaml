@@ -1,5 +1,7 @@
 QUERIES:
 - humanities
+- liberal arts
+- the arts
 WORDPRESS_ENABLE: true
 WORDPRESS_GET_PAGES: true
 WORDPRESS_GET_POSTS: true
@@ -42,11 +44,11 @@ FILENAME_FORMAT: we1schomp_{query}_{site}_{timestamp}_{index}.json
 FILE_OUTPUT_PATH: local/output
 SETTINGS_FILE: local/settings.yaml
 SITES_FILE: local/sites.yaml
-LOG_FILE: we1schomp.log
-LOG_FORMAT: '%(asctime)s - %(name)s - %(levelname)s: %(message)s'
-CONSOLE_FORMAT: '%(levelname)s: %(message)s'
+LOG_FILE: local/we1schomp.log
+LOG_FILE_FORMAT: '%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+LOG_CONSOLE_FORMAT: '%(levelname)s: %(message)s'
 WEBDRIVER_URL: http://harbor.english.ucsb.edu:4444/wd/hub
 WEBDRIVER_SLEEP_MIN: 0.5
 WEBDRIVER_SLEEP_MAX: 5.0
-THREAD_POOL_SIZE: 8
+THREAD_POOL_SIZE: 4
 ENABLE_WORDPRESS: false
