@@ -82,6 +82,7 @@ def get_urls(site, config, browser):
                     'metapath': config['METAPATH'].format(
                         site=site['short_name']),
                     'pub': site['name'],
+                    'pub_date': date,
                     'pub_short': site['short_name'],
                     'title': title,
                     'url': url,
